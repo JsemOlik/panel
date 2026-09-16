@@ -7,7 +7,8 @@ import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
 import { useStoreState } from 'easy-peasy';
 import { usePersistedState } from '@/plugins/usePersistedState';
-import Switch from '@/components/elements/Switch';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import tw from 'twin.macro';
 import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
@@ -55,14 +56,14 @@ export default () => {
     return (
         <PageContentBlock title={'Dashboard'} showFlashKey={'dashboard'}>
             {rootAdmin && (
-                <div css={tw`mb-2 flex justify-end items-center`}>
-                    <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
+                <div css={tw`mb-2 flex justify-end items-center gap-2`}>
+                    <Label htmlFor={'show_all_servers'} className={'text-sm text-neutral-400'}>
                         {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
-                    </p>
+                    </Label>
                     <Switch
-                        name={'show_all_servers'}
-                        defaultChecked={showOnlyAdmin}
-                        onChange={() => setShowOnlyAdmin((s) => !s)}
+                        id={'show_all_servers'}
+                        checked={showOnlyAdmin}
+                        onCheckedChange={(checked: boolean) => setShowOnlyAdmin(checked)}
                     />
                 </div>
             )}

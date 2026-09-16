@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { ServerContext } from '@/state/server';
 import Modal from '@/components/elements/Modal';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import setSelectedDockerImage from '@/api/server/setSelectedDockerImage';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
-import Select from '@/components/elements/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useWebsocketEvent from '@/plugins/useWebsocketEvent';
 import Can from '@/components/elements/Can';
 import getServerStartup from '@/api/swr/getServerStartup';
@@ -86,22 +86,24 @@ const JavaVersionModalFeature = () => {
             <Can action={'startup.docker-image'}>
                 <div css={tw`mt-4`}>
                     <InputSpinner visible={!data || isValidating}>
-                        <Select disabled={!data} onChange={(e) => setSelectedVersion(e.target.value)}>
-                            {!data ? (
-                                <option disabled />
-                            ) : (
-                                Object.keys(data.dockerImages).map((key) => (
-                                    <option key={key} value={data.dockerImages[key]}>
-                                        {key}
-                                    </option>
-                                ))
-                            )}
+                        <Select disabled={!data} value={selectedVersion} onValueChange={setSelectedVersion}>
+                            <SelectTrigger>
+                                <SelectValue placeholder={'Select a Java version'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {data &&
+                                    Object.keys(data.dockerImages).map((key) => (
+                                        <SelectItem key={key} value={data.dockerImages[key]}>
+                                            {key}
+                                        </SelectItem>
+                                    ))}
+                            </SelectContent>
                         </Select>
                     </InputSpinner>
                 </div>
             </Can>
             <div css={tw`mt-8 flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-4 sm:space-y-0`}>
-                <Button isSecondary onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
+                <Button variant={'outline'} onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
                     Cancel
                 </Button>
                 <Can action={'startup.docker-image'}>

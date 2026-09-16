@@ -7,8 +7,7 @@ import { Link } from 'react-router-dom';
 import PaginationFooter from '@/components/elements/table/PaginationFooter';
 import { DesktopComputerIcon, XCircleIcon } from '@heroicons/react/solid';
 import Spinner from '@/components/elements/Spinner';
-import { styles as btnStyles } from '@/components/elements/button/index';
-import classNames from 'classnames';
+import { Button } from '@/components/ui/button';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import useLocationHash from '@/plugins/useLocationHash';
@@ -35,13 +34,11 @@ export default () => {
             <FlashMessageRender byKey={'account'} />
             {(filters.filters?.event || filters.filters?.ip) && (
                 <div className={'flex justify-end mb-2'}>
-                    <Link
-                        to={'#'}
-                        className={classNames(btnStyles.button, btnStyles.text, 'w-full sm:w-auto')}
-                        onClick={() => setFilters((value) => ({ ...value, filters: {} }))}
-                    >
-                        Clear Filters <XCircleIcon className={'w-4 h-4 ml-2'} />
-                    </Link>
+                    <Button asChild variant={'secondary'} className={'w-full sm:w-auto'}>
+                        <Link to={'#'} onClick={() => setFilters((value) => ({ ...value, filters: {} }))}>
+                            Clear Filters <XCircleIcon />
+                        </Link>
+                    </Button>
                 </div>
             )}
             {!data && isValidating ? (

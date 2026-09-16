@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import styled, { keyframes } from 'styled-components/macro';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import NotFoundSvg from '@/assets/images/not_found.svg';
 import ServerErrorSvg from '@/assets/images/server_error.svg';
 
@@ -33,7 +33,7 @@ const spin = keyframes`
 `;
 
 const ActionButton = styled(Button)`
-    ${tw`rounded-full w-8 h-8 flex items-center justify-center p-0`};
+    ${tw`rounded-full`};
 
     &.hover\\:spin:hover {
         animation: ${spin} 2s linear infinite;
@@ -49,6 +49,7 @@ const ScreenBlock = ({ title, image, message, onBack, onRetry }: ScreenBlockProp
                 {(typeof onBack === 'function' || typeof onRetry === 'function') && (
                     <div css={tw`absolute left-0 top-0 ml-4 mt-4`}>
                         <ActionButton
+                            size={'icon-sm'}
                             onClick={() => (onRetry ? onRetry() : onBack ? onBack() : null)}
                             className={onRetry ? 'hover:spin' : undefined}
                         >

@@ -3,7 +3,7 @@ import { ServerContext } from '@/state/server';
 import { CloudUploadIcon, XIcon } from '@heroicons/react/solid';
 import asDialog from '@/hoc/asDialog';
 import { Dialog, DialogWrapperContext } from '@/components/elements/dialog';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import Code from '@/components/elements/Code';
 import { useSignal } from '@preact/signals-react';
@@ -41,7 +41,7 @@ const FileUploadList = () => {
     return (
         <div className={'space-y-2 mt-6'}>
             {uploads.map(([name, file]) => (
-                <div key={name} className={'flex items-center space-x-3 bg-gray-700 p-3 rounded'}>
+                <div key={name} className={'flex items-center space-x-3 bg-gray-700 p-3 rounded-lg'}>
                     <Tooltip content={`${Math.floor((file.loaded / file.total) * 100)}%`} placement={'left'}>
                         <div className={'flex-shrink-0'}>
                             <Spinner progress={(file.loaded / file.total) * 100} className={'w-6 h-6'} />
@@ -57,10 +57,12 @@ const FileUploadList = () => {
                 </div>
             ))}
             <Dialog.Footer>
-                <Button.Danger variant={Button.Variants.Secondary} onClick={() => clearFileUploads()}>
+                <Button variant={'destructive-ghost'} onClick={() => clearFileUploads()}>
                     Cancel Uploads
-                </Button.Danger>
-                <Button.Text onClick={close}>Close</Button.Text>
+                </Button>
+                <Button variant={'secondary'} onClick={close}>
+                    Close
+                </Button>
             </Dialog.Footer>
         </div>
     );

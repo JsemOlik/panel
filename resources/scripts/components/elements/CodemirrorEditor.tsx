@@ -85,7 +85,7 @@ const EditorContainer = styled.div`
     ${tw`relative`};
 
     > div {
-        ${tw`rounded h-full`};
+        ${tw`rounded-lg h-full`};
     }
 
     .CodeMirror {

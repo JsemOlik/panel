@@ -7,13 +7,13 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import Can from '@/components/elements/Can';
 import ReinstallServerBox from '@/components/server/settings/ReinstallServerBox';
 import tw from 'twin.macro';
-import Input from '@/components/elements/Input';
-import Label from '@/components/elements/Label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import isEqual from 'react-fast-compare';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import { ip } from '@/lib/formatters';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 
 export default () => {
     const username = useStoreState((state) => state.user.data!.username);
@@ -30,13 +30,13 @@ export default () => {
                     <Can action={'file.sftp'}>
                         <TitledGreyBox title={'SFTP Details'} css={tw`mb-6 md:mb-10`}>
                             <div>
-                                <Label>Server Address</Label>
+                                <Label className={'mb-2 block'}>Server Address</Label>
                                 <CopyOnClick text={`sftp://${ip(sftp.ip)}:${sftp.port}`}>
                                     <Input type={'text'} value={`sftp://${ip(sftp.ip)}:${sftp.port}`} readOnly />
                                 </CopyOnClick>
                             </div>
                             <div css={tw`mt-6`}>
-                                <Label>Username</Label>
+                                <Label className={'mb-2 block'}>Username</Label>
                                 <CopyOnClick text={`${username}.${id}`}>
                                     <Input type={'text'} value={`${username}.${id}`} readOnly />
                                 </CopyOnClick>
@@ -50,9 +50,9 @@ export default () => {
                                     </div>
                                 </div>
                                 <div css={tw`ml-4`}>
-                                    <a href={`sftp://${username}.${id}@${ip(sftp.ip)}:${sftp.port}`}>
-                                        <Button.Text variant={Button.Variants.Secondary}>Launch SFTP</Button.Text>
-                                    </a>
+                                    <Button asChild variant={'ghost'}>
+                                        <a href={`sftp://${username}.${id}@${ip(sftp.ip)}:${sftp.port}`}>Launch SFTP</a>
+                                    </Button>
                                 </div>
                             </div>
                         </TitledGreyBox>
@@ -60,12 +60,12 @@ export default () => {
                     <TitledGreyBox title={'Debug Information'} css={tw`mb-6 md:mb-10`}>
                         <div css={tw`flex items-center justify-between text-sm`}>
                             <p>Node</p>
-                            <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`}>{node}</code>
+                            <code css={tw`font-mono bg-neutral-900 rounded-md py-1 px-2`}>{node}</code>
                         </div>
                         <CopyOnClick text={uuid}>
                             <div css={tw`flex items-center justify-between mt-2 text-sm`}>
                                 <p>Server ID</p>
-                                <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`}>{uuid}</code>
+                                <code css={tw`font-mono bg-neutral-900 rounded-md py-1 px-2`}>{uuid}</code>
                             </div>
                         </CopyOnClick>
                     </TitledGreyBox>

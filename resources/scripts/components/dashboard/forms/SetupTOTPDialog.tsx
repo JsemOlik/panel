@@ -4,9 +4,10 @@ import getTwoFactorTokenData, { TwoFactorTokenData } from '@/api/account/getTwoF
 import { useFlashKey } from '@/plugins/useFlash';
 import tw from 'twin.macro';
 import QRCode from 'qrcode.react';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import Spinner from '@/components/elements/Spinner';
-import { Input } from '@/components/elements/inputs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import enableAccountTwoFactor from '@/api/account/enableAccountTwoFactor';
@@ -77,30 +78,31 @@ const ConfigureTwoFactorForm = ({ onTokens }: Props) => {
                 Scan the QR code above using the two-step authentication app of your choice. Then, enter the 6-digit
                 code generated into the field below.
             </p>
-            <Input.Text
+            <Input
                 aria-labelledby={'totp-code-description'}
-                variant={Input.Text.Variants.Loose}
                 value={value}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.currentTarget.value)}
-                className={'mt-3'}
+                className={'mt-3 h-10'}
                 placeholder={'000000'}
                 type={'text'}
                 inputMode={'numeric'}
                 autoComplete={'one-time-code'}
                 pattern={'\\d{6}'}
             />
-            <label htmlFor={'totp-password'} className={'block mt-3'}>
+            <Label htmlFor={'totp-password'} className={'mt-6 block'}>
                 Account Password
-            </label>
-            <Input.Text
-                variant={Input.Text.Variants.Loose}
-                className={'mt-1'}
+            </Label>
+            <Input
+                id={'totp-password'}
+                className={'mt-2 h-10'}
                 type={'password'}
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.currentTarget.value)}
             />
             <Dialog.Footer>
-                <Button.Text onClick={close}>Cancel</Button.Text>
+                <Button variant={'secondary'} onClick={close}>
+                    Cancel
+                </Button>
                 <Tooltip
                     disabled={password.length > 0 && value.length === 6}
                     content={

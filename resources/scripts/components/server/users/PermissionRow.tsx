@@ -3,10 +3,9 @@ import tw from 'twin.macro';
 import Checkbox from '@/components/elements/Checkbox';
 import React from 'react';
 import { useStoreState } from 'easy-peasy';
-import Label from '@/components/elements/Label';
 
 const Container = styled.label`
-    ${tw`flex items-center border border-transparent rounded md:p-2 transition-colors duration-75`};
+    ${tw`flex items-center border border-transparent rounded-lg md:p-2 transition-colors duration-75`};
     text-transform: none;
 
     &:not(.disabled) {
@@ -51,11 +50,9 @@ const PermissionRow = ({ permission, disabled }: Props) => {
                 />
             </div>
             <div css={tw`flex-1`}>
-                <Label as={'p'} css={tw`font-medium`}>
-                    {pkey}
-                </Label>
+                <p className={'text-sm font-medium leading-none text-neutral-200'}>{pkey}</p>
                 {permissions[key].keys[pkey].length > 0 && (
-                    <p css={tw`text-xs text-neutral-400 mt-1`}>{permissions[key].keys[pkey]}</p>
+                    <p css={tw`text-xs text-neutral-400 mt-2`}>{permissions[key].keys[pkey]}</p>
                 )}
             </div>
         </Container>

@@ -1,8 +1,7 @@
 import React from 'react';
 import { PaginatedResult } from '@/api/http';
 import tw from 'twin.macro';
-import styled from 'styled-components/macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
 
@@ -19,14 +18,6 @@ interface Props<T> {
     onPageSelect: (page: number) => void;
     children: (props: RenderFuncProps<T>) => React.ReactNode;
 }
-
-const Block = styled(Button)`
-    ${tw`p-0 w-10 h-10`}
-
-    &:not(:last-of-type) {
-        ${tw`mr-2`};
-    }
-`;
 
 function Pagination<T>({ data: { items, pagination }, onPageSelect, children }: Props<T>) {
     const isFirstPage = pagination.currentPage === 1;
@@ -47,26 +38,26 @@ function Pagination<T>({ data: { items, pagination }, onPageSelect, children }: 
         <>
             {children({ items, isFirstPage, isLastPage })}
             {pages.length > 1 && (
-                <div css={tw`mt-4 flex justify-center`}>
+                <div css={tw`mt-4 flex justify-center gap-2`}>
                     {pages[0] > 1 && !isFirstPage && (
-                        <Block isSecondary color={'primary'} onClick={() => onPageSelect(1)}>
+                        <Button variant={'outline'} size={'icon'} onClick={() => onPageSelect(1)}>
                             <FontAwesomeIcon icon={faAngleDoubleLeft} />
-                        </Block>
+                        </Button>
                     )}
                     {pages.map((i) => (
-                        <Block
-                            isSecondary={pagination.currentPage !== i}
-                            color={'primary'}
+                        <Button
+                            variant={pagination.currentPage !== i ? 'outline' : 'default'}
+                            size={'icon'}
                             key={`block_page_${i}`}
                             onClick={() => onPageSelect(i)}
                         >
                             {i}
-                        </Block>
+                        </Button>
                     ))}
                     {pages[4] < pagination.totalPages && !isLastPage && (
-                        <Block isSecondary color={'primary'} onClick={() => onPageSelect(pagination.totalPages)}>
+                        <Button variant={'outline'} size={'icon'} onClick={() => onPageSelect(pagination.totalPages)}>
                             <FontAwesomeIcon icon={faAngleDoubleRight} />
-                        </Block>
+                        </Button>
                     )}
                 </div>
             )}

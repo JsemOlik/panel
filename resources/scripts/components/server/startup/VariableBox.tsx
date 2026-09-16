@@ -3,20 +3,24 @@ import { ServerEggVariable } from '@/api/server/types';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import { usePermissions } from '@/plugins/usePermissions';
 import InputSpinner from '@/components/elements/InputSpinner';
-import Input from '@/components/elements/Input';
+import { Input } from '@/components/ui/input';
 import Switch from '@/components/elements/Switch';
 import { debounce } from 'debounce';
 import updateStartupVariable from '@/api/server/updateStartupVariable';
 import useFlash from '@/plugins/useFlash';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import getServerStartup from '@/api/swr/getServerStartup';
-import Select from '@/components/elements/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import isEqual from 'react-fast-compare';
 import { ServerContext } from '@/state/server';
 
 interface Props {
     variable: ServerEggVariable;
 }
+
+// Radix Select does not allow empty string item values, so an empty option is mapped to this sentinel.
+const EMPTY_SELECT_VALUE = '__empty__';
+const toSelectValue = (value: string) => (value === '' ? EMPTY_SELECT_VALUE : value);
 
 const VariableBox = ({ variable }: Props) => {
     const FLASH_KEY = `server:startup:${variable.envVariable}`;
@@ -94,19 +98,27 @@ const VariableBox = ({ variable }: Props) => {
                         {selectValues.length > 0 ? (
                             <>
                                 <Select
-                                    onChange={(e) => setVariableValue(e.target.value)}
+                                    onValueChange={(value) =>
+                                        setVariableValue(value === EMPTY_SELECT_VALUE ? '' : value)
+                                    }
                                     name={variable.envVariable}
-                                    defaultValue={variable.serverValue ?? variable.defaultValue}
+                                    defaultValue={toSelectValue(variable.serverValue ?? variable.defaultValue)}
                                     disabled={!canEdit || !variable.isEditable}
                                 >
-                                    {selectValues.map((selectValue) => (
-                                        <option
-                                            key={selectValue.replace('in:', '')}
-                                            value={selectValue.replace('in:', '')}
-                                        >
-                                            {selectValue.replace('in:', '')}
-                                        </option>
-                                    ))}
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={variable.defaultValue} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectValues.map((selectValue) => {
+                                            const value = selectValue.replace('in:', '');
+
+                                            return (
+                                                <SelectItem key={value} value={toSelectValue(value)}>
+                                                    {value === '' ? <em>(empty)</em> : value}
+                                                </SelectItem>
+                                            );
+                                        })}
+                                    </SelectContent>
                                 </Select>
                             </>
                         ) : (

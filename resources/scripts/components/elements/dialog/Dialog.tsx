@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Dialog as HDialog } from '@headlessui/react';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import { XIcon } from '@heroicons/react/solid';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DialogContext, IconPosition, RenderDialogProps, styles } from './';
@@ -110,14 +110,14 @@ export default ({
                                     {/* Keep this below the other buttons so that it isn't the default focus if they're present. */}
                                     {!hideCloseIcon && (
                                         <div className={'absolute right-0 top-0 m-4'}>
-                                            <Button.Text
-                                                size={Button.Sizes.Small}
-                                                shape={Button.Shapes.IconSquare}
+                                            <Button
+                                                variant={'secondary'}
+                                                size={'icon-sm'}
                                                 onClick={onClose}
                                                 className={'group'}
                                             >
                                                 <XIcon className={styles.close_icon} />
-                                            </Button.Text>
+                                            </Button>
                                         </div>
                                     )}
                                 </HDialog.Panel>

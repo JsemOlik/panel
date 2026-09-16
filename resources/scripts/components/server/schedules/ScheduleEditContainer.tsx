@@ -11,7 +11,7 @@ import useFlash from '@/plugins/useFlash';
 import { ServerContext } from '@/state/server';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import tw from 'twin.macro';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import ScheduleTaskRow from '@/components/server/schedules/ScheduleTaskRow';
 import isEqual from 'react-fast-compare';
 import { format } from 'date-fns';
@@ -23,7 +23,7 @@ interface Params {
 }
 
 const CronBox = ({ title, value }: { title: string; value: string }) => (
-    <div css={tw`bg-neutral-700 rounded p-3`}>
+    <div css={tw`bg-neutral-700 rounded-xl p-3`}>
         <p css={tw`text-neutral-300 text-sm`}>{title}</p>
         <p css={tw`text-xl font-medium text-neutral-100`}>{value}</p>
     </div>
@@ -84,10 +84,10 @@ export default () => {
                 <Spinner size={'large'} centered />
             ) : (
                 <>
-                    <ScheduleCronRow cron={schedule.cron} css={tw`sm:hidden bg-neutral-700 rounded mb-4 p-3`} />
-                    <div css={tw`rounded shadow`}>
+                    <ScheduleCronRow cron={schedule.cron} css={tw`sm:hidden bg-neutral-700 rounded-xl mb-4 p-3`} />
+                    <div css={tw`rounded-xl shadow`}>
                         <div
-                            css={tw`sm:flex items-center bg-neutral-900 p-3 sm:p-6 border-b-4 border-neutral-600 rounded-t`}
+                            css={tw`sm:flex items-center bg-neutral-900 p-3 sm:p-6 border-b-4 border-neutral-600 rounded-t-xl`}
                         >
                             <div css={tw`flex-1`}>
                                 <h3 css={tw`flex items-center text-neutral-100 text-2xl`}>
@@ -122,9 +122,9 @@ export default () => {
                             </div>
                             <div css={tw`flex sm:block mt-3 sm:mt-0`}>
                                 <Can action={'schedule.update'}>
-                                    <Button.Text className={'flex-1 mr-4'} onClick={toggleEditModal}>
+                                    <Button variant={'secondary'} className={'flex-1 mr-4'} onClick={toggleEditModal}>
                                         Edit
-                                    </Button.Text>
+                                    </Button>
                                     <NewTaskButton schedule={schedule} />
                                 </Can>
                             </div>
@@ -136,7 +136,7 @@ export default () => {
                             <CronBox title={'Month'} value={schedule.cron.month} />
                             <CronBox title={'Day (Week)'} value={schedule.cron.dayOfWeek} />
                         </div>
-                        <div css={tw`bg-neutral-700 rounded-b`}>
+                        <div css={tw`bg-neutral-700 rounded-b-xl`}>
                             {schedule.tasks.length > 0
                                 ? schedule.tasks
                                       .sort((a, b) =>

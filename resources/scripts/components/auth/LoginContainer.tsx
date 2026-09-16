@@ -7,7 +7,7 @@ import { Formik, FormikHelpers } from 'formik';
 import { object, string } from 'yup';
 import Field from '@/components/elements/Field';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import Reaptcha from 'reaptcha';
 import useFlash from '@/plugins/useFlash';
 
@@ -76,17 +76,22 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             {({ isSubmitting, setSubmitting, submitForm }) => (
                 <LoginFormContainer title={'Vítej v Pteru!'} subtitle={'Všechny 4CAMPS servery na jednom místě.'}>
                     <Field
-                        light
                         type={'text'}
                         label={'Uživatelské jméno nebo e-mail'}
                         name={'username'}
                         disabled={isSubmitting}
                     />
                     <div css={tw`mt-6`}>
-                        <Field light type={'password'} label={'Heslo'} name={'password'} disabled={isSubmitting} />
+                        <Field type={'password'} label={'Heslo'} name={'password'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
+                        <Button
+                            size={'lg'}
+                            className={'w-full'}
+                            type={'submit'}
+                            isLoading={isSubmitting}
+                            disabled={isSubmitting}
+                        >
                             Přihlásit se
                         </Button>
                     </div>

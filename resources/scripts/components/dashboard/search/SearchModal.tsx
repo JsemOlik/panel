@@ -12,7 +12,7 @@ import { ApplicationStore } from '@/state';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
-import Input from '@/components/elements/Input';
+import { Input } from '@/components/ui/input';
 import { ip } from '@/lib/formatters';
 
 type Props = RequiredModalProps;
@@ -22,7 +22,7 @@ interface Values {
 }
 
 const ServerResult = styled(Link)`
-    ${tw`flex items-center bg-neutral-900 p-4 rounded border-l-4 border-neutral-900 no-underline transition-all duration-150`};
+    ${tw`flex items-center bg-neutral-900 p-4 rounded-lg border-l-4 border-neutral-900 no-underline transition-all duration-150`};
 
     &:hover {
         ${tw`shadow border-cyan-500`};
@@ -119,7 +119,7 @@ export default ({ ...props }: Props) => {
                                         </p>
                                     </div>
                                     <div css={tw`flex-none text-right`}>
-                                        <span css={tw`text-xs py-1 px-2 bg-cyan-800 text-cyan-100 rounded`}>
+                                        <span css={tw`text-xs py-1 px-2 bg-cyan-800 text-cyan-100 rounded-md`}>
                                             {server.node}
                                         </span>
                                     </div>

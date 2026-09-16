@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import tw from 'twin.macro';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import Fade from '@/components/elements/Fade';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import useFileManagerSwr from '@/plugins/useFileManagerSwr';
@@ -95,12 +95,12 @@ const MassActionsBar = () => {
                 <Portal>
                     <div className={'pointer-events-none fixed bottom-0 mb-6 flex justify-center w-full z-50'}>
                         <Fade timeout={75} in={selectedFiles.length > 0} unmountOnExit>
-                            <div css={tw`flex items-center space-x-4 pointer-events-auto rounded p-4 bg-black/50`}>
+                            <div css={tw`flex items-center space-x-4 pointer-events-auto rounded-lg p-4 bg-black/50`}>
                                 <Button onClick={() => setShowMove(true)}>Move</Button>
                                 <Button onClick={onClickCompress}>Archive</Button>
-                                <Button.Danger variant={Button.Variants.Secondary} onClick={() => setShowConfirm(true)}>
+                                <Button variant={'destructive-ghost'} onClick={() => setShowConfirm(true)}>
                                     Delete
-                                </Button.Danger>
+                                </Button>
                             </div>
                         </Fade>
                     </div>

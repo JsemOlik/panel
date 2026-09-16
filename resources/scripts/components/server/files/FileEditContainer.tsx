@@ -11,8 +11,8 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import { ServerError } from '@/components/elements/ScreenBlock';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
-import Select from '@/components/elements/Select';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import modes from '@/modes';
 import useFlash from '@/plugins/useFlash';
 import { ServerContext } from '@/state/server';
@@ -128,13 +128,14 @@ export default () => {
                 </div>
             </ErrorBoundary>
             {hash.replace(/^#/, '').endsWith('.pteroignore') && (
-                <div css={tw`mb-4 p-4 border-l-4 bg-neutral-900 rounded border-cyan-400`}>
+                <div css={tw`mb-4 p-4 border-l-4 bg-neutral-900 rounded-lg border-cyan-400`}>
                     <p css={tw`text-neutral-300 text-sm`}>
-                        You&apos;re editing a <code css={tw`font-mono bg-black rounded py-px px-1`}>.pteroignore</code>{' '}
-                        file. Any files or directories listed in here will be excluded from backups. Wildcards are
-                        supported by using an asterisk (<code css={tw`font-mono bg-black rounded py-px px-1`}>*</code>).
-                        You can negate a prior rule by prepending an exclamation point (
-                        <code css={tw`font-mono bg-black rounded py-px px-1`}>!</code>).
+                        You&apos;re editing a{' '}
+                        <code css={tw`font-mono bg-black rounded-md py-px px-1`}>.pteroignore</code> file. Any files or
+                        directories listed in here will be excluded from backups. Wildcards are supported by using an
+                        asterisk (<code css={tw`font-mono bg-black rounded-md py-px px-1`}>*</code>). You can negate a
+                        prior rule by prepending an exclamation point (
+                        <code css={tw`font-mono bg-black rounded-md py-px px-1`}>!</code>).
                     </p>
                 </div>
             )}
@@ -167,13 +168,18 @@ export default () => {
                 />
             </div>
             <div css={tw`flex justify-end mt-4`}>
-                <div css={tw`flex-1 sm:flex-none rounded bg-neutral-900 mr-4`}>
-                    <Select value={mode} onChange={(e) => setMode(e.currentTarget.value)}>
-                        {modes.map((mode) => (
-                            <option key={`${mode.name}_${mode.mime}`} value={mode.mime}>
-                                {mode.name}
-                            </option>
-                        ))}
+                <div css={tw`flex-1 sm:flex-none rounded-lg bg-neutral-900 mr-4`}>
+                    <Select value={mode} onValueChange={setMode}>
+                        <SelectTrigger className={'sm:w-48'}>
+                            <SelectValue placeholder={'Select a language'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {modes.map((mode) => (
+                                <SelectItem key={`${mode.name}_${mode.mime}`} value={mode.mime}>
+                                    {mode.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
                     </Select>
                 </div>
                 {action === 'edit' ? (

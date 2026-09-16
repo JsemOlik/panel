@@ -9,19 +9,15 @@ import { httpErrorToHuman } from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { ApiKey } from '@/api/account/getApiKeys';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
-import Input, { Textarea } from '@/components/elements/Input';
-import styled from 'styled-components/macro';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import ApiKeyModal from '@/components/dashboard/ApiKeyModal';
 
 interface Values {
     description: string;
     allowedIps: string;
 }
-
-const CustomTextarea = styled(Textarea)`
-    ${tw`h-32`}
-`;
 
 export default ({ onKeyCreated }: { onKeyCreated: (key: ApiKey) => void }) => {
     const [apiKey, setApiKey] = useState('');
@@ -73,7 +69,7 @@ export default ({ onKeyCreated }: { onKeyCreated: (key: ApiKey) => void }) => {
                                 'Leave blank to allow any IP address to use this API key, otherwise provide each IP address on a new line.'
                             }
                         >
-                            <Field name={'allowedIps'} as={CustomTextarea} />
+                            <Field name={'allowedIps'} as={Textarea} className={'h-32'} />
                         </FormikFieldWrapper>
                         <div css={tw`flex justify-end mt-6`}>
                             <Button>Create</Button>

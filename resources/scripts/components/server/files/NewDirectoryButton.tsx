@@ -6,7 +6,7 @@ import { join, normalize } from 'pathe';
 import { object, string } from 'yup';
 import createDirectory from '@/api/server/files/createDirectory';
 import tw from 'twin.macro';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import { FileObject } from '@/api/server/files/loadDirectory';
 import { useFlashKey } from '@/plugins/useFlash';
 import useFileManagerSwr from '@/plugins/useFileManagerSwr';
@@ -92,9 +92,9 @@ const NewDirectoryDialog = asDialog({
                         </p>
                     </Form>
                     <Dialog.Footer>
-                        <Button.Text className={'w-full sm:w-auto'} onClick={close}>
+                        <Button variant={'secondary'} className={'w-full sm:w-auto'} onClick={close}>
                             Cancel
-                        </Button.Text>
+                        </Button>
                         <Button className={'w-full sm:w-auto'} onClick={submitForm}>
                             Create
                         </Button>
@@ -111,9 +111,9 @@ export default ({ className }: WithClassname) => {
     return (
         <>
             <NewDirectoryDialog open={open} onClose={setOpen.bind(this, false)} />
-            <Button.Text onClick={setOpen.bind(this, true)} className={className}>
+            <Button variant={'secondary'} onClick={setOpen.bind(this, true)} className={className}>
                 Create Directory
-            </Button.Text>
+            </Button>
         </>
     );
 };

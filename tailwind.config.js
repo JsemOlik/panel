@@ -1,16 +1,32 @@
 const colors = require('tailwindcss/colors');
 
+// Dark slate/navy palette, converted from OKLCH to hex so colors can still be parsed
+// and alpha-blended at runtime (e.g. by the console charts).
 const gray = {
-    50: 'hsl(216, 33%, 97%)',
-    100: 'hsl(214, 15%, 91%)',
-    200: 'hsl(210, 16%, 82%)',
-    300: 'hsl(211, 13%, 65%)',
-    400: 'hsl(211, 10%, 53%)',
-    500: 'hsl(211, 12%, 43%)',
-    600: 'hsl(209, 14%, 37%)',
-    700: 'hsl(209, 18%, 30%)',
-    800: 'hsl(209, 20%, 25%)',
-    900: 'hsl(210, 24%, 16%)',
+    50: '#f9fafb',
+    100: '#e6ecf2',
+    200: '#cad5e2', // sidebar foreground
+    300: '#aebcce',
+    400: '#90a1b9', // muted foreground
+    500: '#455369',
+    600: '#1c2432', // secondary / muted surfaces
+    700: '#080f1c', // cards
+    800: '#050a17', // page background
+    900: '#030612',
+};
+
+// 4CAMPS brand purple, with #8a4cf5 as the base shade.
+const brand = {
+    50: '#f5f3ff',
+    100: '#ede9ff',
+    200: '#ded5ff',
+    300: '#c6b3ff',
+    400: '#a989fc',
+    500: '#8a4cf5',
+    600: '#773dd7',
+    700: '#6430b9',
+    800: '#512995',
+    900: '#3f2372',
 };
 
 module.exports = {
@@ -23,13 +39,17 @@ module.exports = {
                 header: ['"IBM Plex Sans"', '"Roboto"', 'system-ui', 'sans-serif'],
             },
             colors: {
-                black: '#131a20',
+                black: '#030612',
                 // "primary" and "neutral" are deprecated, prefer the use of "blue" and "gray"
                 // in new code.
-                primary: colors.blue,
+                primary: brand,
+                blue: brand,
+                cyan: brand,
                 gray: gray,
                 neutral: gray,
-                cyan: colors.cyan,
+                red: { ...colors.red, 500: '#fb2c36' },
+                green: { ...colors.green, 500: '#22c55e' },
+                yellow: { ...colors.yellow, 500: '#ffb900' },
             },
             fontSize: {
                 '2xs': '0.625rem',

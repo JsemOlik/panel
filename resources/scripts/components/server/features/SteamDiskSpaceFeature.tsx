@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ServerContext } from '@/state/server';
 import Modal from '@/components/elements/Modal';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
 import { SocketEvent } from '@/components/server/events';
@@ -58,11 +58,11 @@ const SteamDiskSpaceFeature = () => {
                     </p>
                     <p css={tw`mt-4`}>
                         Ensure the machine has enough disk space by typing{' '}
-                        <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`}>df -h</code> on the machine hosting
-                        this server. Delete files or increase the available disk space to resolve the issue.
+                        <code css={tw`font-mono bg-neutral-900 rounded-md py-1 px-2`}>df -h</code> on the machine
+                        hosting this server. Delete files or increase the available disk space to resolve the issue.
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
-                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
+                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
                             Close
                         </Button>
                     </div>
@@ -77,7 +77,7 @@ const SteamDiskSpaceFeature = () => {
                         process. Please get in touch with the administrator(s) and inform them of disk space issues.
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
-                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
+                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
                             Close
                         </Button>
                     </div>

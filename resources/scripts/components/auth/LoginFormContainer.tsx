@@ -11,14 +11,12 @@ type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, 
 
 // 4CAMPS brand palette for the authentication screens.
 const colors = {
-    background: '#050a14',
+    background: '#050a17',
     primary: '#8a4cf5',
     primaryHover: 'rgba(138, 76, 245, 0.9)',
     glow: 'rgba(138, 76, 245, 0.1)',
-    foreground: '#f8fafc',
-    muted: '#94a3b8',
-    input: 'rgba(255, 255, 255, 0.04)',
-    border: 'rgba(255, 255, 255, 0.12)',
+    foreground: '#f4f7fa',
+    muted: '#90a1b9',
 };
 
 const Wrapper = styled.div`
@@ -37,41 +35,14 @@ const Glow = styled.div`
     filter: blur(64px);
 `;
 
-// The form fields and buttons are shared with the rest of the panel, so restyle them here
-// with enough specificity to beat their default (light/blue) styles.
+// The buttons and links are shared with the rest of the panel, so restyle them here
+// with enough specificity to beat their default styles.
 const Content = styled.div`
     ${tw`relative w-full`};
     max-width: 24rem;
 
-    && label {
-        ${tw`text-sm normal-case font-medium mb-2`};
-        color: ${colors.foreground};
-    }
-
-    && input:not([type='checkbox']):not([type='radio']) {
-        ${tw`h-10 px-3 py-2 border rounded-md text-sm shadow-none`};
-        background-color: ${colors.input};
-        border-color: ${colors.border};
-        color: ${colors.foreground};
-
-        &:not(:disabled):not(:read-only):focus {
-            ${tw`shadow-none`};
-            border-color: ${colors.primary};
-            box-shadow: 0 0 0 3px rgba(138, 76, 245, 0.3);
-        }
-    }
-
-    && .input-help {
-        ${tw`mt-1.5 text-xs`};
-        color: ${colors.muted};
-
-        &.error {
-            color: #f87171;
-        }
-    }
-
     && button[type='submit'] {
-        ${tw`h-10 px-6 py-0 rounded-md border-0 text-sm font-medium normal-case tracking-normal`};
+        ${tw`h-10 px-6 py-0 rounded-lg border-0 text-sm font-medium normal-case tracking-normal`};
         background-color: ${colors.primary};
         color: #ffffff;
 

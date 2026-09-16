@@ -9,7 +9,7 @@ import Field from '@/components/elements/Field';
 import { Formik, FormikHelpers } from 'formik';
 import { object, string } from 'yup';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import Reaptcha from 'reaptcha';
 import useFlash from '@/plugins/useFlash';
 
@@ -74,7 +74,6 @@ export default () => {
             {({ isSubmitting, setSubmitting, submitForm }) => (
                 <LoginFormContainer title={'Request Password Reset'}>
                     <Field
-                        light
                         label={'Email'}
                         description={
                             'Enter your account email address to receive instructions on resetting your password.'
@@ -83,7 +82,13 @@ export default () => {
                         type={'email'}
                     />
                     <div css={tw`mt-6`}>
-                        <Button type={'submit'} size={'xlarge'} disabled={isSubmitting} isLoading={isSubmitting}>
+                        <Button
+                            size={'lg'}
+                            className={'w-full'}
+                            type={'submit'}
+                            disabled={isSubmitting}
+                            isLoading={isSubmitting}
+                        >
                             Send Email
                         </Button>
                     </div>

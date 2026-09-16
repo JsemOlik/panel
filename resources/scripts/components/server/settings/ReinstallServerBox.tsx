@@ -6,7 +6,7 @@ import { Actions, useStoreActions } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import { httpErrorToHuman } from '@/api/http';
 import tw from 'twin.macro';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/elements/dialog';
 
 export default () => {
@@ -69,9 +69,9 @@ export default () => {
                 </strong>
             </p>
             <div css={tw`mt-6 text-right`}>
-                <Button.Danger variant={Button.Variants.Secondary} onClick={() => setModalVisible(true)}>
+                <Button variant={'destructive-ghost'} onClick={() => setModalVisible(true)}>
                     Reinstall Server
-                </Button.Danger>
+                </Button>
             </div>
         </TitledGreyBox>
     );

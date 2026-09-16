@@ -14,9 +14,9 @@ import Can from '@/components/elements/Can';
 import { ServerDatabase } from '@/api/server/databases/getServerDatabases';
 import useFlash from '@/plugins/useFlash';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
-import Label from '@/components/elements/Label';
-import Input from '@/components/elements/Input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 
@@ -86,10 +86,15 @@ export default ({ database, className }: Props) => {
                                 description={'Enter the database name to confirm deletion.'}
                             />
                             <div css={tw`mt-6 text-right`}>
-                                <Button type={'button'} isSecondary css={tw`mr-2`} onClick={() => setVisible(false)}>
+                                <Button
+                                    variant={'outline'}
+                                    type={'button'}
+                                    css={tw`mr-2`}
+                                    onClick={() => setVisible(false)}
+                                >
                                     Cancel
                                 </Button>
-                                <Button type={'submit'} color={'red'} disabled={!isValid}>
+                                <Button variant={'destructive'} type={'submit'} disabled={!isValid}>
                                     Delete Database
                                 </Button>
                             </div>
@@ -101,31 +106,31 @@ export default ({ database, className }: Props) => {
                 <FlashMessageRender byKey={'database-connection-modal'} css={tw`mb-6`} />
                 <h3 css={tw`mb-6 text-2xl`}>Database connection details</h3>
                 <div>
-                    <Label>Endpoint</Label>
+                    <Label className={'mb-2 block'}>Endpoint</Label>
                     <CopyOnClick text={database.connectionString}>
                         <Input type={'text'} readOnly value={database.connectionString} />
                     </CopyOnClick>
                 </div>
                 <div css={tw`mt-6`}>
-                    <Label>Connections from</Label>
+                    <Label className={'mb-2 block'}>Connections from</Label>
                     <Input type={'text'} readOnly value={database.allowConnectionsFrom} />
                 </div>
                 <div css={tw`mt-6`}>
-                    <Label>Username</Label>
+                    <Label className={'mb-2 block'}>Username</Label>
                     <CopyOnClick text={database.username}>
                         <Input type={'text'} readOnly value={database.username} />
                     </CopyOnClick>
                 </div>
                 <Can action={'database.view_password'}>
                     <div css={tw`mt-6`}>
-                        <Label>Password</Label>
+                        <Label className={'mb-2 block'}>Password</Label>
                         <CopyOnClick text={database.password} showInNotification={false}>
                             <Input type={'text'} readOnly value={database.password} />
                         </CopyOnClick>
                     </div>
                 </Can>
                 <div css={tw`mt-6`}>
-                    <Label>JDBC Connection String</Label>
+                    <Label className={'mb-2 block'}>JDBC Connection String</Label>
                     <CopyOnClick text={jdbcConnectionString} showInNotification={false}>
                         <Input type={'text'} readOnly value={jdbcConnectionString} />
                     </CopyOnClick>
@@ -134,7 +139,7 @@ export default ({ database, className }: Props) => {
                     <Can action={'database.update'}>
                         <RotatePasswordButton databaseId={database.id} onUpdate={appendDatabase} />
                     </Can>
-                    <Button isSecondary onClick={() => setConnectionVisible(false)}>
+                    <Button variant={'outline'} onClick={() => setConnectionVisible(false)}>
                         Close
                     </Button>
                 </div>
@@ -165,11 +170,11 @@ export default ({ database, className }: Props) => {
                     <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>Username</p>
                 </div>
                 <div css={tw`ml-8`}>
-                    <Button isSecondary css={tw`mr-2`} onClick={() => setConnectionVisible(true)}>
+                    <Button variant={'outline'} css={tw`mr-2`} onClick={() => setConnectionVisible(true)}>
                         <FontAwesomeIcon icon={faEye} fixedWidth />
                     </Button>
                     <Can action={'database.delete'}>
-                        <Button color={'red'} isSecondary onClick={() => setVisible(true)}>
+                        <Button variant={'destructive-ghost'} onClick={() => setVisible(true)}>
                             <FontAwesomeIcon icon={faTrashAlt} fixedWidth />
                         </Button>
                     </Can>

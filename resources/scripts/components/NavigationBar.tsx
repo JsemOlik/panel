@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCogs, faLayerGroup, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faCogs, faLayerGroup, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
@@ -32,7 +32,12 @@ const RightNavigation = styled.div`
     }
 `;
 
-export default () => {
+interface Props {
+    onOpenSidebar?: () => void;
+    sidebarOpen?: boolean;
+}
+
+export default ({ onOpenSidebar, sidebarOpen }: Props) => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -46,14 +51,27 @@ export default () => {
     };
 
     return (
-        <div className={'w-full bg-neutral-900 shadow-md overflow-x-auto'}>
+        <div
+            className={'w-full border-b shadow-md overflow-x-auto'}
+            style={{ backgroundColor: '#070c1a', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+        >
             <SpinnerOverlay visible={isLoggingOut} />
-            <div className={'mx-auto w-full flex items-center h-[3.5rem] max-w-[1200px]'}>
-                <div id={'logo'} className={'flex-1'}>
-                    <Link to={'/'} className={'flex items-center px-4 no-underline'}>
-                        <img src={'/assets/svgs/4camps-ptero-logo.svg'} alt={name} className={'block h-8 w-auto'} />
+            <div className={'w-full flex items-center h-[3.5rem]'}>
+                <div className={'flex flex-1 items-center gap-2 px-2 lg:hidden'}>
+                    <button
+                        type={'button'}
+                        onClick={onOpenSidebar}
+                        aria-label={'Open sidebar'}
+                        aria-expanded={sidebarOpen}
+                        className={'p-2 text-neutral-300 hover:text-neutral-50'}
+                    >
+                        <FontAwesomeIcon icon={faBars} fixedWidth />
+                    </button>
+                    <Link to={'/'} className={'flex items-center no-underline'}>
+                        <img src={'/assets/svgs/4camps-ptero-icon.svg'} alt={name} className={'block w-8 h-8'} />
                     </Link>
                 </div>
+                <div className={'hidden flex-1 lg:block'} />
                 <RightNavigation className={'flex h-full items-center justify-center'}>
                     <SearchContainer />
                     <Tooltip placement={'bottom'} content={'Dashboard'}>

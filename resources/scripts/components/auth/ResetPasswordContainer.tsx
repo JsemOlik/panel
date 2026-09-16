@@ -9,9 +9,10 @@ import { ApplicationStore } from '@/state';
 import { Formik, FormikHelpers } from 'formik';
 import { object, ref, string } from 'yup';
 import Field from '@/components/elements/Field';
-import Input from '@/components/elements/Input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 
 interface Values {
     password: string;
@@ -63,12 +64,13 @@ export default ({ match, location }: RouteComponentProps<{ token: string }>) => 
             {({ isSubmitting }) => (
                 <LoginFormContainer title={'Reset Password'}>
                     <div>
-                        <label>Email</label>
-                        <Input value={email} isLight disabled />
+                        <Label htmlFor={'reset_email'} className={'mb-2 block'}>
+                            Email
+                        </Label>
+                        <Input id={'reset_email'} value={email} disabled />
                     </div>
                     <div css={tw`mt-6`}>
                         <Field
-                            light
                             label={'New Password'}
                             name={'password'}
                             type={'password'}
@@ -76,10 +78,16 @@ export default ({ match, location }: RouteComponentProps<{ token: string }>) => 
                         />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Field light label={'Confirm New Password'} name={'passwordConfirmation'} type={'password'} />
+                        <Field label={'Confirm New Password'} name={'passwordConfirmation'} type={'password'} />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Button size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
+                        <Button
+                            size={'lg'}
+                            className={'w-full'}
+                            type={'submit'}
+                            disabled={isSubmitting}
+                            isLoading={isSubmitting}
+                        >
                             Reset Password
                         </Button>
                     </div>

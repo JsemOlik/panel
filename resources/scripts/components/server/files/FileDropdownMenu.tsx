@@ -24,8 +24,12 @@ import useFlash from '@/plugins/useFlash';
 import tw from 'twin.macro';
 import { FileObject } from '@/api/server/files/loadDirectory';
 import useFileManagerSwr from '@/plugins/useFileManagerSwr';
-import DropdownMenu from '@/components/elements/DropdownMenu';
-import styled from 'styled-components/macro';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import useEventListener from '@/plugins/useEventListener';
 import compressFiles from '@/api/server/files/compressFiles';
 import decompressFiles from '@/api/server/files/decompressFiles';
@@ -35,27 +39,34 @@ import { Dialog } from '@/components/elements/dialog';
 
 type ModalType = 'rename' | 'move' | 'chmod';
 
-const StyledRow = styled.div<{ $danger?: boolean }>`
-    ${tw`p-2 flex items-center rounded`};
-    ${(props) =>
-        props.$danger ? tw`hover:bg-red-100 hover:text-red-700` : tw`hover:bg-neutral-100 hover:text-neutral-700`};
-`;
-
-interface RowProps extends React.HTMLAttributes<HTMLDivElement> {
+interface RowProps {
     icon: IconDefinition;
     title: string;
-    $danger?: boolean;
+    danger?: boolean;
+    onSelect: () => void;
 }
 
-const Row = ({ icon, title, ...props }: RowProps) => (
-    <StyledRow {...props}>
+const Row = ({ icon, title, danger, onSelect }: RowProps) => (
+    <DropdownMenuItem variant={danger ? 'destructive' : 'default'} onSelect={onSelect}>
         <FontAwesomeIcon icon={icon} css={tw`text-xs`} fixedWidth />
-        <span css={tw`ml-2`}>{title}</span>
-    </StyledRow>
+        <span>{title}</span>
+    </DropdownMenuItem>
 );
 
+// Where the menu is anchored, relative to the wrapper around the toggle button. Menus opened with the
+// toggle button hang below it, menus opened with a right click on the file row open at the cursor.
+interface MenuAnchor {
+    x: number;
+    y: number;
+    align: 'start' | 'end';
+    fromButton: boolean;
+}
+
 const FileDropdownMenu = ({ file }: { file: FileObject }) => {
-    const onClickRef = useRef<DropdownMenu>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [open, setOpen] = useState(false);
+    const [anchor, setAnchor] = useState<MenuAnchor>({ x: 0, y: 0, align: 'end', fromButton: true });
     const [showSpinner, setShowSpinner] = useState(false);
     const [modal, setModal] = useState<ModalType | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -65,11 +76,24 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
     const { clearAndAddHttpError, clearFlashes } = useFlash();
     const directory = ServerContext.useStoreState((state) => state.files.directory);
 
-    useEventListener(`pterodactyl:files:ctx:${file.key}`, (e: CustomEvent) => {
-        if (onClickRef.current) {
-            onClickRef.current.triggerMenu(e.detail);
-        }
+    useEventListener(`pterodactyl:files:ctx:${file.key}`, (e: CustomEvent<{ x: number; y: number }>) => {
+        const rect = wrapperRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        setAnchor({ x: e.detail.x - rect.left, y: e.detail.y - rect.top, align: 'start', fromButton: false });
+        setOpen(true);
     });
+
+    const onToggleClick = () => {
+        if (open) {
+            setOpen(false);
+            return;
+        }
+
+        const rect = wrapperRef.current?.getBoundingClientRect();
+        setAnchor({ x: rect?.width || 0, y: rect?.height || 0, align: 'end', fromButton: true });
+        setOpen(true);
+    };
 
     const doDeletion = () => {
         clearFlashes('files');
@@ -139,57 +163,90 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
                 You will not be able to recover the contents of&nbsp;
                 <span className={'font-semibold text-gray-50'}>{file.name}</span> once deleted.
             </Dialog.Confirm>
-            <DropdownMenu
-                ref={onClickRef}
-                renderToggle={(onClick) => (
-                    <div css={tw`px-4 py-2 hover:text-white`} onClick={onClick}>
-                        <FontAwesomeIcon icon={faEllipsisH} />
-                        {modal ? (
-                            modal === 'chmod' ? (
-                                <ChmodFileModal
-                                    visible
-                                    appear
-                                    files={[{ file: file.name, mode: file.modeBits }]}
-                                    onDismissed={() => setModal(null)}
-                                />
-                            ) : (
-                                <RenameFileModal
-                                    visible
-                                    appear
-                                    files={[file.name]}
-                                    useMoveTerminology={modal === 'move'}
-                                    onDismissed={() => setModal(null)}
-                                />
-                            )
-                        ) : null}
-                        <SpinnerOverlay visible={showSpinner} fixed size={'large'} />
-                    </div>
-                )}
-            >
-                <Can action={'file.update'}>
-                    <Row onClick={() => setModal('rename')} icon={faPencilAlt} title={'Rename'} />
-                    <Row onClick={() => setModal('move')} icon={faLevelUpAlt} title={'Move'} />
-                    <Row onClick={() => setModal('chmod')} icon={faFileCode} title={'Permissions'} />
-                </Can>
-                {file.isFile && (
-                    <Can action={'file.create'}>
-                        <Row onClick={doCopy} icon={faCopy} title={'Copy'} />
-                    </Can>
-                )}
-                {file.isArchiveType() ? (
-                    <Can action={'file.create'}>
-                        <Row onClick={doUnarchive} icon={faBoxOpen} title={'Unarchive'} />
-                    </Can>
+            {modal ? (
+                modal === 'chmod' ? (
+                    <ChmodFileModal
+                        visible
+                        appear
+                        files={[{ file: file.name, mode: file.modeBits }]}
+                        onDismissed={() => setModal(null)}
+                    />
                 ) : (
-                    <Can action={'file.archive'}>
-                        <Row onClick={doArchive} icon={faFileArchive} title={'Archive'} />
-                    </Can>
-                )}
-                {file.isFile && <Row onClick={doDownload} icon={faFileDownload} title={'Download'} />}
-                <Can action={'file.delete'}>
-                    <Row onClick={() => setShowConfirmation(true)} icon={faTrashAlt} title={'Delete'} $danger />
-                </Can>
-            </DropdownMenu>
+                    <RenameFileModal
+                        visible
+                        appear
+                        files={[file.name]}
+                        useMoveTerminology={modal === 'move'}
+                        onDismissed={() => setModal(null)}
+                    />
+                )
+            ) : null}
+            <SpinnerOverlay visible={showSpinner} fixed size={'large'} />
+            <div ref={wrapperRef} css={tw`relative`}>
+                <button
+                    ref={buttonRef}
+                    type={'button'}
+                    aria-label={'File actions'}
+                    aria-haspopup={'menu'}
+                    aria-expanded={open}
+                    css={tw`px-4 py-2 hover:text-white focus-visible:outline-none focus-visible:text-white`}
+                    onClick={onToggleClick}
+                >
+                    <FontAwesomeIcon icon={faEllipsisH} />
+                </button>
+                <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+                    <DropdownMenuTrigger asChild>
+                        <span
+                            aria-hidden
+                            tabIndex={-1}
+                            css={tw`absolute w-0 h-0 pointer-events-none`}
+                            style={{ left: anchor.x, top: anchor.y }}
+                        />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        key={`${anchor.x}:${anchor.y}`}
+                        align={anchor.align}
+                        sideOffset={anchor.fromButton ? 4 : 0}
+                        className={'w-48'}
+                        onInteractOutside={(e: Event) => {
+                            // Let the toggle button handle its own clicks so it closes the menu instead of reopening it.
+                            if (buttonRef.current?.contains(e.target as Node)) {
+                                e.preventDefault();
+                            }
+                        }}
+                        onCloseAutoFocus={(e: Event) => {
+                            e.preventDefault();
+                            if (anchor.fromButton) {
+                                buttonRef.current?.focus();
+                            }
+                        }}
+                    >
+                        <Can action={'file.update'}>
+                            <Row onSelect={() => setModal('rename')} icon={faPencilAlt} title={'Rename'} />
+                            <Row onSelect={() => setModal('move')} icon={faLevelUpAlt} title={'Move'} />
+                            <Row onSelect={() => setModal('chmod')} icon={faFileCode} title={'Permissions'} />
+                        </Can>
+                        {file.isFile && (
+                            <Can action={'file.create'}>
+                                <Row onSelect={doCopy} icon={faCopy} title={'Copy'} />
+                            </Can>
+                        )}
+                        {file.isArchiveType() ? (
+                            <Can action={'file.create'}>
+                                <Row onSelect={doUnarchive} icon={faBoxOpen} title={'Unarchive'} />
+                            </Can>
+                        ) : (
+                            <Can action={'file.archive'}>
+                                <Row onSelect={doArchive} icon={faFileArchive} title={'Archive'} />
+                            </Can>
+                        )}
+                        {file.isFile && <Row onSelect={doDownload} icon={faFileDownload} title={'Download'} />}
+                        <Can action={'file.delete'}>
+                            <Row onSelect={() => setShowConfirmation(true)} icon={faTrashAlt} title={'Delete'} danger />
+                        </Can>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </>
     );
 };

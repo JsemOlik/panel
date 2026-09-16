@@ -4,9 +4,9 @@ import { object, string } from 'yup';
 import FormikFieldWrapper from '@/components/elements/FormikFieldWrapper';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
-import Input, { Textarea } from '@/components/elements/Input';
-import styled from 'styled-components/macro';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useFlashKey } from '@/plugins/useFlash';
 import { createSSHKey, useSSHKeys } from '@/api/account/ssh-keys';
 
@@ -14,10 +14,6 @@ interface Values {
     name: string;
     publicKey: string;
 }
-
-const CustomTextarea = styled(Textarea)`
-    ${tw`h-32`}
-`;
 
 export default () => {
     const { clearAndAddHttpError } = useFlashKey('account');
@@ -56,7 +52,7 @@ export default () => {
                             name={'publicKey'}
                             description={'Enter your public SSH key.'}
                         >
-                            <Field name={'publicKey'} as={CustomTextarea} />
+                            <Field name={'publicKey'} as={Textarea} className={'h-32'} />
                         </FormikFieldWrapper>
                         <div css={tw`flex justify-end mt-6`}>
                             <Button>Save</Button>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Route, Switch } from 'react-router-dom';
-import NavigationBar from '@/components/NavigationBar';
+import AppLayout from '@/components/AppLayout';
 import DashboardContainer from '@/components/dashboard/DashboardContainer';
 import { NotFound } from '@/components/elements/ScreenBlock';
 import TransitionRouter from '@/TransitionRouter';
@@ -13,8 +13,7 @@ export default () => {
     const location = useLocation();
 
     return (
-        <>
-            <NavigationBar />
+        <AppLayout>
             {location.pathname.startsWith('/account') && (
                 <SubNavigation>
                     <div>
@@ -45,6 +44,6 @@ export default () => {
                     </Switch>
                 </React.Suspense>
             </TransitionRouter>
-        </>
+        </AppLayout>
     );
 };

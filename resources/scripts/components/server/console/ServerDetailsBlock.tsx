@@ -12,30 +12,34 @@ import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
 import { ServerContext } from '@/state/server';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
 import UptimeDuration from '@/components/server/UptimeDuration';
-import StatBlock from '@/components/server/console/StatBlock';
+import StatBlock, { StatTone } from '@/components/server/console/StatBlock';
 import useWebsocketEvent from '@/plugins/useWebsocketEvent';
 import classNames from 'classnames';
 import { capitalize } from '@/lib/strings';
 
 type Stats = Record<'memory' | 'cpu' | 'disk' | 'uptime' | 'rx' | 'tx', number>;
 
-const getBackgroundColor = (value: number, max: number | null): string | undefined => {
+const getTone = (value: number, max: number | null): StatTone | undefined => {
     const delta = !max ? 0 : value / max;
 
     if (delta > 0.8) {
         if (delta > 0.9) {
-            return 'bg-red-500';
+            return 'danger';
         }
-        return 'bg-yellow-500';
+        return 'warning';
     }
 
     return undefined;
 };
 
+// Usage as a percentage of the limit, or undefined when there is no limit to compare against.
+const getPercentage = (value: number, max: number | null): number | undefined =>
+    !max ? undefined : Math.min(100, (value / max) * 100);
+
 const Limit = ({ limit, children }: { limit: string | null; children: React.ReactNode }) => (
     <>
         {children}
-        <span className={'ml-1 text-gray-300 text-[70%] select-none'}>/ {limit || <>&infin;</>}</span>
+        <span className={'ml-1 text-neutral-400 font-medium text-[70%] select-none'}>/ {limit || <>&infin;</>}</span>
     </>
 );
 
@@ -96,7 +100,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
             <StatBlock
                 icon={faClock}
                 title={'Uptime'}
-                color={getBackgroundColor(status === 'running' ? 0 : status !== 'offline' ? 9 : 10, 10)}
+                tone={getTone(status === 'running' ? 0 : status !== 'offline' ? 9 : 10, 10)}
             >
                 {status === null ? (
                     'Offline'
@@ -106,9 +110,14 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
                     capitalize(status)
                 )}
             </StatBlock>
-            <StatBlock icon={faMicrochip} title={'CPU Load'} color={getBackgroundColor(stats.cpu, limits.cpu)}>
+            <StatBlock
+                icon={faMicrochip}
+                title={'CPU Load'}
+                tone={getTone(stats.cpu, limits.cpu)}
+                progress={status === 'offline' ? undefined : getPercentage(stats.cpu, limits.cpu)}
+            >
                 {status === 'offline' ? (
-                    <span className={'text-gray-400'}>Offline</span>
+                    <span className={'text-neutral-400'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
                 )}
@@ -116,22 +125,28 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
             <StatBlock
                 icon={faMemory}
                 title={'Memory'}
-                color={getBackgroundColor(stats.memory / 1024, limits.memory * 1024)}
+                tone={getTone(stats.memory / 1024, limits.memory * 1024)}
+                progress={status === 'offline' ? undefined : getPercentage(stats.memory / 1024, limits.memory * 1024)}
             >
                 {status === 'offline' ? (
-                    <span className={'text-gray-400'}>Offline</span>
+                    <span className={'text-neutral-400'}>Offline</span>
                 ) : (
                     <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
                 )}
             </StatBlock>
-            <StatBlock icon={faHdd} title={'Disk'} color={getBackgroundColor(stats.disk / 1024, limits.disk * 1024)}>
+            <StatBlock
+                icon={faHdd}
+                title={'Disk'}
+                tone={getTone(stats.disk / 1024, limits.disk * 1024)}
+                progress={getPercentage(stats.disk / 1024, limits.disk * 1024)}
+            >
                 <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
             </StatBlock>
             <StatBlock icon={faCloudDownloadAlt} title={'Network (Inbound)'}>
-                {status === 'offline' ? <span className={'text-gray-400'}>Offline</span> : bytesToString(stats.rx)}
+                {status === 'offline' ? <span className={'text-neutral-400'}>Offline</span> : bytesToString(stats.rx)}
             </StatBlock>
             <StatBlock icon={faCloudUploadAlt} title={'Network (Outbound)'}>
-                {status === 'offline' ? <span className={'text-gray-400'}>Offline</span> : bytesToString(stats.tx)}
+                {status === 'offline' ? <span className={'text-neutral-400'}>Offline</span> : bytesToString(stats.tx)}
             </StatBlock>
         </div>
     );

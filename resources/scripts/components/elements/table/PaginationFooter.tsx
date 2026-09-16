@@ -1,7 +1,7 @@
 import React from 'react';
 import { PaginationDataSet } from '@/api/http';
 import classNames from 'classnames';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/solid';
 
 interface Props {
@@ -31,9 +31,8 @@ const PaginationFooter = ({ pagination, className, onPageSelect }: Props) => {
     }
 
     const buttonProps = (page: number) => ({
-        size: Button.Sizes.Small,
-        shape: Button.Shapes.IconSquare,
-        variant: Button.Variants.Secondary,
+        size: 'icon-sm' as const,
+        variant: 'ghost' as const,
         onClick: () => onPageSelect(page),
     });
 
@@ -50,25 +49,23 @@ const PaginationFooter = ({ pagination, className, onPageSelect }: Props) => {
             </p>
             {pagination.totalPages > 1 && (
                 <div className={'flex space-x-1'}>
-                    <Button.Text {...buttonProps(1)} disabled={pages.previous.length !== 2}>
-                        <ChevronDoubleLeftIcon className={'w-3 h-3'} />
-                    </Button.Text>
-                    {pages.previous.reverse().map((value) => (
-                        <Button.Text key={`previous-${value}`} {...buttonProps(value)}>
-                            {value}
-                        </Button.Text>
-                    ))}
-                    <Button size={Button.Sizes.Small} shape={Button.Shapes.IconSquare}>
-                        {current}
+                    <Button {...buttonProps(1)} disabled={pages.previous.length !== 2}>
+                        <ChevronDoubleLeftIcon />
                     </Button>
-                    {pages.next.map((value) => (
-                        <Button.Text key={`next-${value}`} {...buttonProps(value)}>
+                    {pages.previous.reverse().map((value) => (
+                        <Button key={`previous-${value}`} {...buttonProps(value)}>
                             {value}
-                        </Button.Text>
+                        </Button>
                     ))}
-                    <Button.Text {...buttonProps(total)} disabled={pages.next.length !== 2}>
-                        <ChevronDoubleRightIcon className={'w-3 h-3'} />
-                    </Button.Text>
+                    <Button size={'icon-sm'}>{current}</Button>
+                    {pages.next.map((value) => (
+                        <Button key={`next-${value}`} {...buttonProps(value)}>
+                            {value}
+                        </Button>
+                    ))}
+                    <Button {...buttonProps(total)} disabled={pages.next.length !== 2}>
+                        <ChevronDoubleRightIcon />
+                    </Button>
                 </div>
             )}
         </div>

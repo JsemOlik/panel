@@ -1,7 +1,28 @@
 import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
-import tw from 'twin.macro';
-import { capitalize } from '@/lib/strings';
+import { cn } from '@/lib/utils';
+
+interface FieldMessageProps {
+    // The validation error for the field, if any. Takes precedence over the description.
+    error?: unknown;
+    children?: React.ReactNode;
+    className?: string;
+}
+
+// Renders the validation error for a form field, falling back to its description.
+export const FieldMessage = ({ error, children, className }: FieldMessageProps) => {
+    if (error) {
+        const message = Array.isArray(error) ? error[0] : error;
+
+        return (
+            <p role={'alert'} className={cn('field-message mt-2 text-xs text-red-400', className)}>
+                {String(message).charAt(0).toUpperCase() + String(message).slice(1)}
+            </p>
+        );
+    }
+
+    return children ? <p className={cn('field-message mt-2 text-xs text-neutral-400', className)}>{children}</p> : null;
+};
 
 interface Props {
     errors: FormikErrors<any>;
@@ -10,15 +31,8 @@ interface Props {
     children?: string | number | null | undefined;
 }
 
-const InputError = ({ errors, touched, name, children }: Props) =>
-    touched[name] && errors[name] ? (
-        <p css={tw`text-xs text-red-400 pt-2`}>
-            {typeof errors[name] === 'string'
-                ? capitalize(errors[name] as string)
-                : capitalize((errors[name] as unknown as string[])[0])}
-        </p>
-    ) : (
-        <>{children ? <p css={tw`text-xs text-neutral-400 pt-2`}>{children}</p> : null}</>
-    );
+const InputError = ({ errors, touched, name, children }: Props) => (
+    <FieldMessage error={touched[name] && errors[name]}>{children}</FieldMessage>
+);
 
 export default InputError;

@@ -32,6 +32,11 @@ module.exports = {
                 test: /\.mjs$/,
                 include: /node_modules/,
                 type: 'javascript/auto',
+                // Radix packages import 'react/jsx-runtime' without an extension, which React 16
+                // does not map through package exports.
+                resolve: {
+                    fullySpecified: false,
+                },
             },
             {
                 test: /\.css$/,

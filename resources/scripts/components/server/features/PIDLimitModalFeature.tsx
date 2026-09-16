@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ServerContext } from '@/state/server';
 import Modal from '@/components/elements/Modal';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
 import { SocketEvent } from '@/components/server/events';
@@ -72,7 +72,7 @@ const PIDLimitModalFeature = () => {
                         <b>Note: Wings must be restarted for the configuration file changes to take effect</b>
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
-                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
+                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
                             Close
                         </Button>
                     </div>
@@ -93,7 +93,7 @@ const PIDLimitModalFeature = () => {
                         </code>
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
-                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
+                        <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto`}>
                             Close
                         </Button>
                     </div>

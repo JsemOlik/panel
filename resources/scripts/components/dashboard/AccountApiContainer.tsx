@@ -14,6 +14,7 @@ import GreyRowBox from '@/components/elements/GreyRowBox';
 import { Dialog } from '@/components/elements/dialog';
 import { useFlashKey } from '@/plugins/useFlash';
 import Code from '@/components/elements/Code';
+import { Button } from '@/components/ui/button';
 
 export default () => {
     const [deleteIdentifier, setDeleteIdentifier] = useState('');
@@ -78,14 +79,19 @@ export default () => {
                                     </p>
                                 </div>
                                 <p css={tw`text-sm ml-4 hidden md:block`}>
-                                    <code css={tw`font-mono py-1 px-2 bg-neutral-900 rounded`}>{key.identifier}</code>
+                                    <code css={tw`font-mono py-1 px-2 bg-neutral-900 rounded-md`}>
+                                        {key.identifier}
+                                    </code>
                                 </p>
-                                <button css={tw`ml-4 p-2 text-sm`} onClick={() => setDeleteIdentifier(key.identifier)}>
-                                    <FontAwesomeIcon
-                                        icon={faTrashAlt}
-                                        css={tw`text-neutral-400 hover:text-red-400 transition-colors duration-150`}
-                                    />
-                                </button>
+                                <Button
+                                    variant={'destructive-ghost'}
+                                    size={'icon-sm'}
+                                    className={'ml-4 text-neutral-400'}
+                                    aria-label={'Delete'}
+                                    onClick={() => setDeleteIdentifier(key.identifier)}
+                                >
+                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                </Button>
                             </GreyRowBox>
                         ))
                     )}

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import styled from 'styled-components/macro';
 import { v4 } from 'uuid';
 import tw from 'twin.macro';
-import Label from '@/components/elements/Label';
+import { Label } from '@/components/ui/label';
 import Input from '@/components/elements/Input';
 
 const ToggleContainer = styled.div`
@@ -67,7 +67,7 @@ const Switch = ({ name, label, description, defaultChecked, readOnly, onChange, 
             {(label || description) && (
                 <div css={tw`ml-4 w-full`}>
                     {label && (
-                        <Label css={[tw`cursor-pointer`, !!description && tw`mb-0`]} htmlFor={uuid}>
+                        <Label className={'block cursor-pointer'} htmlFor={uuid}>
                             {label}
                         </Label>
                     )}

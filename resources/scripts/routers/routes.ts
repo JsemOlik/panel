@@ -1,17 +1,16 @@
 import React, { lazy } from 'react';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
-    faArchive,
-    faCalendarAlt,
-    faCog,
-    faDatabase,
-    faFolderOpen,
-    faHistory,
-    faNetworkWired,
-    faPlayCircle,
-    faTerminal,
-    faUsers,
-} from '@fortawesome/free-solid-svg-icons';
+    ArchiveIcon,
+    CalendarIcon,
+    ClockIcon,
+    CogIcon,
+    DatabaseIcon,
+    FolderIcon,
+    GlobeAltIcon,
+    PlayIcon,
+    TerminalIcon,
+    UsersIcon,
+} from '@heroicons/react/outline';
 import ServerConsole from '@/components/server/console/ServerConsoleContainer';
 import DatabasesContainer from '@/components/server/databases/DatabasesContainer';
 import ScheduleContainer from '@/components/server/schedules/ScheduleContainer';
@@ -47,7 +46,9 @@ interface RouteDefinition {
 interface ServerRouteDefinition extends RouteDefinition {
     permission: string | string[] | null;
     // The icon displayed next to the route name in the server sidebar.
-    icon?: IconDefinition;
+    icon?: React.ComponentType<React.ComponentProps<'svg'>>;
+    // The sidebar section this route is listed under, routes without one are listed first.
+    group?: string;
 }
 
 interface Routes {
@@ -86,7 +87,7 @@ export default {
             path: '/',
             permission: null,
             name: 'Console',
-            icon: faTerminal,
+            icon: TerminalIcon,
             component: ServerConsole,
             exact: true,
         },
@@ -94,7 +95,8 @@ export default {
             path: '/files',
             permission: 'file.*',
             name: 'Files',
-            icon: faFolderOpen,
+            icon: FolderIcon,
+            group: 'Management',
             component: FileManagerContainer,
         },
         {
@@ -107,14 +109,16 @@ export default {
             path: '/databases',
             permission: 'database.*',
             name: 'Databases',
-            icon: faDatabase,
+            icon: DatabaseIcon,
+            group: 'Management',
             component: DatabasesContainer,
         },
         {
             path: '/schedules',
             permission: 'schedule.*',
             name: 'Schedules',
-            icon: faCalendarAlt,
+            icon: CalendarIcon,
+            group: 'Management',
             component: ScheduleContainer,
         },
         {
@@ -127,42 +131,47 @@ export default {
             path: '/users',
             permission: 'user.*',
             name: 'Users',
-            icon: faUsers,
+            icon: UsersIcon,
+            group: 'Configuration',
             component: UsersContainer,
         },
         {
             path: '/backups',
             permission: 'backup.*',
             name: 'Backups',
-            icon: faArchive,
+            icon: ArchiveIcon,
+            group: 'Management',
             component: BackupContainer,
         },
         {
             path: '/network',
             permission: 'allocation.*',
             name: 'Network',
-            icon: faNetworkWired,
+            icon: GlobeAltIcon,
+            group: 'Configuration',
             component: NetworkContainer,
         },
         {
             path: '/startup',
             permission: 'startup.*',
             name: 'Startup',
-            icon: faPlayCircle,
+            icon: PlayIcon,
+            group: 'Configuration',
             component: StartupContainer,
         },
         {
             path: '/settings',
             permission: ['settings.*', 'file.sftp'],
             name: 'Settings',
-            icon: faCog,
+            icon: CogIcon,
+            group: 'Configuration',
             component: SettingsContainer,
         },
         {
             path: '/activity',
             permission: 'activity.*',
             name: 'Activity',
-            icon: faHistory,
+            icon: ClockIcon,
             component: ServerActivityLogContainer,
         },
     ],

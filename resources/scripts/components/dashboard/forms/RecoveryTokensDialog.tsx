@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogProps } from '@/components/elements/dialog';
-import { Button } from '@/components/elements/button/index';
+import { Button } from '@/components/ui/button';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import { Alert } from '@/components/elements/alert';
 
@@ -29,7 +29,7 @@ export default ({ tokens, open, onClose }: RecoveryTokenDialogProps) => {
         >
             <Dialog.Icon position={'container'} type={'success'} />
             <CopyOnClick text={tokens.join('\n')} showInNotification={false}>
-                <pre className={'bg-gray-800 rounded p-2 mt-6'}>
+                <pre className={'bg-gray-800 rounded-md p-2 mt-6'}>
                     {grouped.map((value) => (
                         <span key={value.join('_')} className={'block'}>
                             {value[0]}
@@ -44,7 +44,9 @@ export default ({ tokens, open, onClose }: RecoveryTokenDialogProps) => {
                 These codes will not be shown again.
             </Alert>
             <Dialog.Footer>
-                <Button.Text onClick={onClose}>Done</Button.Text>
+                <Button variant={'secondary'} onClick={onClose}>
+                    Done
+                </Button>
             </Dialog.Footer>
         </Dialog>
     );

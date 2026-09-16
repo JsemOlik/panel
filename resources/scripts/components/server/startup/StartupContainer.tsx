@@ -9,9 +9,9 @@ import { ServerError } from '@/components/elements/ScreenBlock';
 import { httpErrorToHuman } from '@/api/http';
 import { ServerContext } from '@/state/server';
 import { useDeepCompareEffect } from '@/plugins/useDeepCompareEffect';
-import Select from '@/components/elements/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import isEqual from 'react-fast-compare';
-import Input from '@/components/elements/Input';
+import { Input } from '@/components/ui/input';
 import setSelectedDockerImage from '@/api/server/setSelectedDockerImage';
 import InputSpinner from '@/components/elements/InputSpinner';
 import useFlash from '@/plugins/useFlash';
@@ -60,11 +60,10 @@ const StartupContainer = () => {
     }, [data]);
 
     const updateSelectedDockerImage = useCallback(
-        (v: React.ChangeEvent<HTMLSelectElement>) => {
+        (image: string) => {
             setLoading(true);
             clearFlashes('startup:image');
 
-            const image = v.currentTarget.value;
             setSelectedDockerImage(uuid, image)
                 .then(() => setServerFromState((s) => ({ ...s, dockerImage: image })))
                 .catch((error) => {
@@ -87,7 +86,7 @@ const StartupContainer = () => {
             <div css={tw`md:flex`}>
                 <TitledGreyBox title={'Startup Command'} css={tw`flex-1`}>
                     <div css={tw`px-1 py-2`}>
-                        <p css={tw`font-mono bg-neutral-900 rounded py-2 px-4`}>{data.invocation}</p>
+                        <p css={tw`font-mono bg-neutral-900 rounded-md py-2 px-4`}>{data.invocation}</p>
                     </div>
                 </TitledGreyBox>
                 <TitledGreyBox title={'Docker Image'} css={tw`flex-1 lg:flex-none lg:w-1/3 mt-8 md:mt-0 md:ml-10`}>
@@ -96,14 +95,19 @@ const StartupContainer = () => {
                             <InputSpinner visible={loading}>
                                 <Select
                                     disabled={Object.keys(data.dockerImages).length < 2}
-                                    onChange={updateSelectedDockerImage}
+                                    onValueChange={updateSelectedDockerImage}
                                     defaultValue={variables.dockerImage}
                                 >
-                                    {Object.keys(data.dockerImages).map((key) => (
-                                        <option key={data.dockerImages[key]} value={data.dockerImages[key]}>
-                                            {key}
-                                        </option>
-                                    ))}
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={'Select a Docker image'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.keys(data.dockerImages).map((key) => (
+                                            <SelectItem key={data.dockerImages[key]} value={data.dockerImages[key]}>
+                                                {key}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
                                 </Select>
                             </InputSpinner>
                             <p css={tw`text-xs text-neutral-300 mt-2`}>

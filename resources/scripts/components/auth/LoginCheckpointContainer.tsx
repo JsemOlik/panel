@@ -9,7 +9,7 @@ import useFlash from '@/plugins/useFlash';
 import { FlashStore } from '@/state/flashes';
 import Field from '@/components/elements/Field';
 import tw from 'twin.macro';
-import Button from '@/components/elements/Button';
+import { Button } from '@/components/ui/button';
 
 interface Values {
     code: string;
@@ -30,7 +30,6 @@ const LoginCheckpointContainer = () => {
         <LoginFormContainer title={'Device Checkpoint'}>
             <div css={tw`mt-6`}>
                 <Field
-                    light
                     name={isMissingDevice ? 'recoveryCode' : 'code'}
                     title={isMissingDevice ? 'Recovery Code' : 'Authentication Code'}
                     description={
@@ -44,7 +43,13 @@ const LoginCheckpointContainer = () => {
                 />
             </div>
             <div css={tw`mt-6`}>
-                <Button size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
+                <Button
+                    size={'lg'}
+                    className={'w-full'}
+                    type={'submit'}
+                    disabled={isSubmitting}
+                    isLoading={isSubmitting}
+                >
                     Continue
                 </Button>
             </div>
