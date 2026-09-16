@@ -10,6 +10,7 @@ import Tooltip from '@/components/elements/tooltip/Tooltip';
 import { ApplicationStore } from '@/state';
 import { sidebarColors } from '@/components/elements/sidebar/Sidebar';
 import { Button } from '@/components/ui/button';
+import { BrandIcon, BrandLogo } from '@/components/elements/BrandLogo';
 
 interface Props {
     // Renders the navigation shown in the sidebar. The mobile drawer is never collapsed.
@@ -35,9 +36,9 @@ const Logo = ({ collapsed = false }: { collapsed?: boolean }) => {
     return (
         <Link to={'/'} css={tw`flex items-center no-underline`}>
             {collapsed ? (
-                <img src={'/assets/svgs/4camps-ptero-icon.svg'} alt={name} css={tw`block w-8 h-8`} />
+                <BrandIcon title={name} css={tw`block w-8 h-8`} />
             ) : (
-                <img src={'/assets/svgs/4camps-ptero-logo.svg'} alt={name} css={tw`block h-8 w-auto`} />
+                <BrandLogo title={name} css={tw`block h-8 w-auto`} />
             )}
         </Link>
     );

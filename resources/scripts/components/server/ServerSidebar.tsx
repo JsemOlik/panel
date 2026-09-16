@@ -1,13 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useStoreState } from 'easy-peasy';
-import { ExternalLinkIcon, SelectorIcon, ServerIcon } from '@heroicons/react/outline';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import tw from 'twin.macro';
 import Can from '@/components/elements/Can';
-import Tooltip from '@/components/elements/tooltip/Tooltip';
-import { SidebarGroup, SidebarLink, sidebarColors } from '@/components/elements/sidebar/Sidebar';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { SidebarGroup, SidebarLink } from '@/components/elements/sidebar/Sidebar';
 import { ServerContext } from '@/state/server';
 import routes from '@/routers/routes';
 
@@ -68,47 +64,5 @@ export default ({ to, collapsed }: Props) => {
                 </SidebarGroup>
             )}
         </nav>
-    );
-};
-
-// Shows the server being managed at the bottom of the sidebar, linking back to the server list.
-export const ServerSidebarFooter = ({ collapsed }: { collapsed: boolean }) => {
-    const name = ServerContext.useStoreState((state) => state.server.data?.name);
-    const node = ServerContext.useStoreState((state) => state.server.data?.node);
-
-    const avatar = (
-        <span
-            css={tw`flex flex-shrink-0 items-center justify-center w-10 h-10 rounded-lg text-neutral-50`}
-            style={{ backgroundColor: sidebarColors.accent }}
-        >
-            <ServerIcon className={'!size-5'} aria-hidden={'true'} />
-        </span>
-    );
-
-    return (
-        <Tooltip placement={'right'} content={'Switch server'} disabled={!collapsed}>
-            <Button
-                asChild
-                variant={'ghost'}
-                className={cn('h-auto w-full justify-start gap-3 p-2', collapsed && 'justify-center')}
-            >
-                <Link to={'/'} aria-label={'Switch server'}>
-                    {avatar}
-                    {!collapsed && (
-                        <>
-                            <span css={tw`flex-1 min-w-0`}>
-                                <span css={tw`block truncate text-sm font-semibold text-neutral-50`} title={name}>
-                                    {name}
-                                </span>
-                                <span css={tw`block truncate text-xs`} style={{ color: sidebarColors.muted }}>
-                                    {node}
-                                </span>
-                            </span>
-                            <SelectorIcon style={{ color: sidebarColors.muted }} />
-                        </>
-                    )}
-                </Link>
-            </Button>
-        </Tooltip>
     );
 };

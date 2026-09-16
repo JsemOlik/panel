@@ -15,24 +15,20 @@ const gray = {
     900: '#030612',
 };
 
-// 4CAMPS brand purple, with #8a4cf5 as the base shade.
-const brand = {
-    50: '#f5f3ff',
-    100: '#ede9ff',
-    200: '#ded5ff',
-    300: '#c6b3ff',
-    400: '#a989fc',
-    500: '#8a4cf5',
-    600: '#773dd7',
-    700: '#6430b9',
-    800: '#512995',
-    900: '#3f2372',
-};
+// The primary color is picked by each user (Account > Appearance), so its shades are CSS variables
+// holding space-separated RGB channels. They are set at runtime by resources/scripts/lib/primaryColor.ts.
+const brand = Object.fromEntries(
+    [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => [
+        shade,
+        ({ opacityValue }) =>
+            opacityValue === undefined
+                ? `rgb(var(--color-primary-${shade}))`
+                : `rgb(var(--color-primary-${shade}) / ${opacityValue})`,
+    ])
+);
 
 module.exports = {
-    content: [
-        './resources/scripts/**/*.{js,ts,tsx}',
-    ],
+    content: ['./resources/scripts/**/*.{js,ts,tsx}'],
     theme: {
         extend: {
             fontFamily: {
@@ -57,7 +53,7 @@ module.exports = {
             transitionDuration: {
                 250: '250ms',
             },
-            borderColor: theme => ({
+            borderColor: (theme) => ({
                 default: theme('colors.neutral.400', 'currentColor'),
             }),
         },
@@ -67,5 +63,5 @@ module.exports = {
         require('@tailwindcss/forms')({
             strategy: 'class',
         }),
-    ]
+    ],
 };

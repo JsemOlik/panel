@@ -12,6 +12,7 @@ import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import Avatar from '@/components/Avatar';
+import { BrandIcon } from '@/components/elements/BrandLogo';
 
 const RightNavigation = styled.div`
     & > a,
@@ -68,7 +69,7 @@ export default ({ onOpenSidebar, sidebarOpen }: Props) => {
                         <FontAwesomeIcon icon={faBars} fixedWidth />
                     </button>
                     <Link to={'/'} className={'flex items-center no-underline'}>
-                        <img src={'/assets/svgs/4camps-ptero-icon.svg'} alt={name} className={'block w-8 h-8'} />
+                        <BrandIcon title={name} className={'block w-8 h-8'} />
                     </Link>
                 </div>
                 <div className={'hidden flex-1 lg:block'} />

@@ -15,7 +15,7 @@ import { useLocation } from 'react-router';
 import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
-import ServerSidebar, { ServerSidebarFooter } from '@/components/server/ServerSidebar';
+import ServerSidebar from '@/components/server/ServerSidebar';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -61,7 +61,6 @@ export default () => {
         <AppLayout
             key={'server-router'}
             sidebar={uuid && id ? (collapsed) => <ServerSidebar to={to} collapsed={collapsed} /> : undefined}
-            sidebarFooter={uuid && id ? (collapsed) => <ServerSidebarFooter collapsed={collapsed} /> : undefined}
         >
             {!uuid || !id ? (
                 error ? (

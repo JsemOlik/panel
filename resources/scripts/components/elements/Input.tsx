@@ -18,7 +18,7 @@ const checkboxStyle = css`
 
     &:focus {
         ${tw`outline-none border-primary-300`};
-        box-shadow: 0 0 0 1px rgba(138, 76, 245, 0.35);
+        box-shadow: 0 0 0 1px rgb(var(--color-primary-500) / 0.35);
     }
 `;
 

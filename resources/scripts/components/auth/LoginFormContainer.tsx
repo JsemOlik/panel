@@ -3,6 +3,7 @@ import { Form } from 'formik';
 import styled from 'styled-components/macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import tw from 'twin.macro';
+import { BrandIcon } from '@/components/elements/BrandLogo';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
     title?: string;
@@ -12,9 +13,9 @@ type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, 
 // 4CAMPS brand palette for the authentication screens.
 const colors = {
     background: '#050a17',
-    primary: '#8a4cf5',
-    primaryHover: 'rgba(138, 76, 245, 0.9)',
-    glow: 'rgba(138, 76, 245, 0.1)',
+    primary: 'rgb(var(--color-primary-500))',
+    primaryHover: 'rgb(var(--color-primary-500) / 0.9)',
+    glow: 'rgb(var(--color-primary-500) / 0.1)',
     foreground: '#f4f7fa',
     muted: '#90a1b9',
 };
@@ -76,12 +77,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, ...props }
         <Glow aria-hidden={'true'} />
         <Content>
             <div css={tw`flex flex-col items-center gap-4 text-center select-none`}>
-                <img
-                    src={'/assets/svgs/4camps-ptero-icon.svg'}
-                    alt={''}
-                    aria-hidden={'true'}
-                    css={tw`block w-10 h-10 flex-shrink-0`}
-                />
+                <BrandIcon aria-hidden={'true'} css={tw`block w-10 h-10 flex-shrink-0`} />
                 {(title || subtitle) && (
                     <div>
                         {title && (

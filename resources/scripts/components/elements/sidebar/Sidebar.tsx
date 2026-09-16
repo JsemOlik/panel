@@ -12,9 +12,6 @@ export const sidebarColors = {
     muted: '#90a1b9',
     border: 'rgba(255, 255, 255, 0.1)',
     hover: 'rgba(255, 255, 255, 0.05)',
-    accent: '#8a4cf5',
-    active: 'rgba(138, 76, 245, 0.22)',
-    activeBorder: 'rgba(138, 76, 245, 0.4)',
 };
 
 type Icon = React.ComponentType<React.ComponentProps<'svg'>>;
