@@ -74,7 +74,7 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
-                <LoginFormContainer title={'Vítej v Pteru!'} subtitle={'Všchny 4CAMPS servery na jednom místě.'}>
+                <LoginFormContainer title={'Vítej v Pteru!'} subtitle={'Všechny 4CAMPS servery na jednom místě.'}>
                     <Field
                         light
                         type={'text'}

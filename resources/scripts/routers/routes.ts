@@ -1,4 +1,17 @@
 import React, { lazy } from 'react';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import {
+    faArchive,
+    faCalendarAlt,
+    faCog,
+    faDatabase,
+    faFolderOpen,
+    faHistory,
+    faNetworkWired,
+    faPlayCircle,
+    faTerminal,
+    faUsers,
+} from '@fortawesome/free-solid-svg-icons';
 import ServerConsole from '@/components/server/console/ServerConsoleContainer';
 import DatabasesContainer from '@/components/server/databases/DatabasesContainer';
 import ScheduleContainer from '@/components/server/schedules/ScheduleContainer';
@@ -33,6 +46,8 @@ interface RouteDefinition {
 
 interface ServerRouteDefinition extends RouteDefinition {
     permission: string | string[] | null;
+    // The icon displayed next to the route name in the server sidebar.
+    icon?: IconDefinition;
 }
 
 interface Routes {
@@ -71,6 +86,7 @@ export default {
             path: '/',
             permission: null,
             name: 'Console',
+            icon: faTerminal,
             component: ServerConsole,
             exact: true,
         },
@@ -78,6 +94,7 @@ export default {
             path: '/files',
             permission: 'file.*',
             name: 'Files',
+            icon: faFolderOpen,
             component: FileManagerContainer,
         },
         {
@@ -90,12 +107,14 @@ export default {
             path: '/databases',
             permission: 'database.*',
             name: 'Databases',
+            icon: faDatabase,
             component: DatabasesContainer,
         },
         {
             path: '/schedules',
             permission: 'schedule.*',
             name: 'Schedules',
+            icon: faCalendarAlt,
             component: ScheduleContainer,
         },
         {
@@ -108,36 +127,42 @@ export default {
             path: '/users',
             permission: 'user.*',
             name: 'Users',
+            icon: faUsers,
             component: UsersContainer,
         },
         {
             path: '/backups',
             permission: 'backup.*',
             name: 'Backups',
+            icon: faArchive,
             component: BackupContainer,
         },
         {
             path: '/network',
             permission: 'allocation.*',
             name: 'Network',
+            icon: faNetworkWired,
             component: NetworkContainer,
         },
         {
             path: '/startup',
             permission: 'startup.*',
             name: 'Startup',
+            icon: faPlayCircle,
             component: StartupContainer,
         },
         {
             path: '/settings',
             permission: ['settings.*', 'file.sftp'],
             name: 'Settings',
+            icon: faCog,
             component: SettingsContainer,
         },
         {
             path: '/activity',
             permission: 'activity.*',
             name: 'Activity',
+            icon: faHistory,
             component: ServerActivityLogContainer,
         },
     ],
