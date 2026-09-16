@@ -46,6 +46,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property Nest $nest
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\Server[] $servers
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\EggVariable[] $variables
+ * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\EggConsoleShortcut[] $consoleShortcuts
  * @property Egg|null $scriptFrom
  * @property Egg|null $configFrom
  */
@@ -293,6 +294,16 @@ class Egg extends Model implements Identifiable
     public function variables(): HasMany
     {
         return $this->hasMany(EggVariable::class, 'egg_id');
+    }
+
+    /**
+     * Gets the console shortcuts shown to servers using this egg, in display order.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\Pterodactyl\Models\EggConsoleShortcut, $this>
+     */
+    public function consoleShortcuts(): HasMany
+    {
+        return $this->hasMany(EggConsoleShortcut::class, 'egg_id')->orderBy('sort_order')->orderBy('id');
     }
 
     /**

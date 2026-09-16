@@ -209,11 +209,13 @@ Route::group(['prefix' => 'nests'], function () {
     Route::get('/egg/{egg:id}/export', [Admin\Nests\EggShareController::class, 'export'])->name('admin.nests.egg.export');
     Route::get('/egg/{egg:id}/variables', [Admin\Nests\EggVariableController::class, 'view'])->name('admin.nests.egg.variables');
     Route::get('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'index'])->name('admin.nests.egg.scripts');
+    Route::get('/egg/{egg:id}/shortcuts', [Admin\Nests\EggConsoleShortcutController::class, 'index'])->name('admin.nests.egg.shortcuts');
 
     Route::post('/new', [Admin\Nests\NestController::class, 'store']);
     Route::post('/import', [Admin\Nests\EggShareController::class, 'import'])->name('admin.nests.egg.import');
     Route::post('/egg/new', [Admin\Nests\EggController::class, 'store']);
     Route::post('/egg/{egg:id}/variables', [Admin\Nests\EggVariableController::class, 'store']);
+    Route::post('/egg/{egg:id}/shortcuts', [Admin\Nests\EggConsoleShortcutController::class, 'store']);
 
     Route::put('/egg/{egg:id}', [Admin\Nests\EggShareController::class, 'update']);
 
@@ -221,8 +223,10 @@ Route::group(['prefix' => 'nests'], function () {
     Route::patch('/egg/{egg:id}', [Admin\Nests\EggController::class, 'update']);
     Route::patch('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'update']);
     Route::patch('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'update'])->name('admin.nests.egg.variables.edit');
+    Route::patch('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'update'])->name('admin.nests.egg.shortcuts.edit');
 
     Route::delete('/view/{nest:id}', [Admin\Nests\NestController::class, 'destroy']);
     Route::delete('/egg/{egg:id}', [Admin\Nests\EggController::class, 'destroy']);
     Route::delete('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'destroy']);
+    Route::delete('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'destroy']);
 });

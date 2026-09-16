@@ -12,6 +12,7 @@ use Illuminate\Container\Container;
 use Pterodactyl\Models\EggVariable;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\NullResource;
+use Pterodactyl\Models\EggConsoleShortcut;
 use Pterodactyl\Services\Servers\StartupCommandService;
 
 class ServerTransformer extends BaseClientTransformer
@@ -68,6 +69,15 @@ class ServerTransformer extends BaseClientTransformer
             'invocation' => $service->handle($server, !$user->can(Permission::ACTION_STARTUP_READ, $server)),
             'docker_image' => $server->image,
             'egg_features' => $server->egg->inherit_features,
+            'console_shortcuts' => $user->can(Permission::ACTION_CONTROL_CONSOLE, $server)
+                ? $server->egg->consoleShortcuts->map(fn (EggConsoleShortcut $shortcut) => [
+                    'id' => $shortcut->id,
+                    'name' => $shortcut->name,
+                    'description' => $shortcut->description,
+                    'command' => $shortcut->command,
+                    'arguments' => $shortcut->arguments ?? [],
+                ])->values()->all()
+                : [],
             'feature_limits' => [
                 'databases' => $server->database_limit,
                 'allocations' => $server->allocation_limit,

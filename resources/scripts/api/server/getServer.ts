@@ -12,6 +12,25 @@ export interface Allocation {
     isDefault: boolean;
 }
 
+export interface ConsoleShortcutArgument {
+    key: string;
+    label: string;
+    description: string | null;
+    placeholder: string | null;
+    default: string | null;
+    required: boolean;
+}
+
+// A button below the console that sends a command defined on the server's egg. The command may
+// contain {{key}} placeholders that are filled in from the arguments.
+export interface ConsoleShortcut {
+    id: number;
+    name: string;
+    description: string | null;
+    command: string;
+    arguments: ConsoleShortcutArgument[];
+}
+
 export interface Server {
     /**
      * This value is determined by the presence of the `PTERODACTYL_USE_SERVER_IDENTIFIERS` environment
@@ -52,6 +71,7 @@ export interface Server {
         threads: string;
     };
     eggFeatures: string[];
+    consoleShortcuts: ConsoleShortcut[];
     featureLimits: {
         databases: number;
         allocations: number;
@@ -82,6 +102,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     description: data.description ? (data.description.length > 0 ? data.description : null) : null,
     limits: { ...data.limits },
     eggFeatures: data.egg_features || [],
+    consoleShortcuts: data.console_shortcuts || [],
     featureLimits: { ...data.feature_limits },
     isTransferring: data.is_transferring,
     skipScripts: data.skip_scripts,

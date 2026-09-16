@@ -6,6 +6,7 @@ import isEqual from 'react-fast-compare';
 import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import Console from '@/components/server/console/Console';
+import ConsoleShortcuts from '@/components/server/console/ConsoleShortcuts';
 import StatGraphs from '@/components/server/console/StatGraphs';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
@@ -46,10 +47,13 @@ const ServerConsoleContainer = () => {
                 </div>
             </div>
             <div className={'grid grid-cols-4 gap-2 sm:gap-4 mb-4'}>
-                <div className={'flex col-span-4 lg:col-span-3'}>
-                    <Spinner.Suspense>
-                        <Console />
-                    </Spinner.Suspense>
+                <div className={'flex flex-col col-span-4 lg:col-span-3'}>
+                    <div className={'flex flex-1'}>
+                        <Spinner.Suspense>
+                            <Console />
+                        </Spinner.Suspense>
+                    </div>
+                    <ConsoleShortcuts className={'mt-2 sm:mt-4'} />
                 </div>
                 <ServerDetailsBlock className={'col-span-4 lg:col-span-1 order-last lg:order-none'} />
             </div>
