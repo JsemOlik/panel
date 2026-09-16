@@ -39,7 +39,8 @@
         <div class="wrapper">
             <header class="main-header">
                 <a href="{{ route('index') }}" class="logo">
-                    <span>{{ config('app.name', 'Pterodactyl') }}</span>
+                    <span class="logo-mini"><img src="/assets/svgs/4camps-ptero-icon.svg" alt="{{ config('app.name', 'Pterodactyl') }}" style="height: 32px; width: auto; vertical-align: middle;"></span>
+                    <span class="logo-lg"><img src="/assets/svgs/4camps-ptero-logo.svg" alt="{{ config('app.name', 'Pterodactyl') }}" style="height: 32px; width: auto; vertical-align: middle;"></span>
                 </a>
                 <nav class="navbar navbar-static-top">
                     <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">

@@ -50,13 +50,8 @@ export default () => {
             <SpinnerOverlay visible={isLoggingOut} />
             <div className={'mx-auto w-full flex items-center h-[3.5rem] max-w-[1200px]'}>
                 <div id={'logo'} className={'flex-1'}>
-                    <Link
-                        to={'/'}
-                        className={
-                            'text-2xl font-header font-medium px-4 no-underline text-neutral-200 hover:text-neutral-100 transition-colors duration-150'
-                        }
-                    >
-                        {name}
+                    <Link to={'/'} className={'flex items-center px-4 no-underline'}>
+                        <img src={'/assets/svgs/4camps-ptero-logo.svg'} alt={name} className={'block h-8 w-auto'} />
                     </Link>
                 </div>
                 <RightNavigation className={'flex h-full items-center justify-center'}>

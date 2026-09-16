@@ -61,7 +61,7 @@ export default ({ match, location }: RouteComponentProps<{ token: string }>) => 
             })}
         >
             {({ isSubmitting }) => (
-                <LoginFormContainer title={'Reset Password'} css={tw`w-full flex`}>
+                <LoginFormContainer title={'Reset Password'}>
                     <div>
                         <label>Email</label>
                         <Input value={email} isLight disabled />

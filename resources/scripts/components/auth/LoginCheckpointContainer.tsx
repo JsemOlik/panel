@@ -27,7 +27,7 @@ const LoginCheckpointContainer = () => {
     const [isMissingDevice, setIsMissingDevice] = useState(false);
 
     return (
-        <LoginFormContainer title={'Device Checkpoint'} css={tw`w-full flex`}>
+        <LoginFormContainer title={'Device Checkpoint'}>
             <div css={tw`mt-6`}>
                 <Field
                     light
@@ -50,6 +50,7 @@ const LoginCheckpointContainer = () => {
             </div>
             <div css={tw`mt-6 text-center`}>
                 <span
+                    role={'button'}
                     onClick={() => {
                         setFieldValue('code', '');
                         setFieldValue('recoveryCode', '');
