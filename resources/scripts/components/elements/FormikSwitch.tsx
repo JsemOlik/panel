@@ -11,11 +11,11 @@ const FormikSwitch = ({ name, label, ...props }: SwitchProps) => {
                     <Switch
                         name={name}
                         label={label}
-                        onChange={() => {
+                        onChange={(checked) => {
                             form.setFieldTouched(name);
-                            form.setFieldValue(field.name, !field.value);
+                            form.setFieldValue(field.name, checked);
                         }}
-                        defaultChecked={field.value}
+                        checked={!!field.value}
                         {...props}
                     />
                 )}

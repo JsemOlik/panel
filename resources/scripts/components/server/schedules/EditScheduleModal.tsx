@@ -113,8 +113,8 @@ const EditScheduleModal = ({ schedule }: Props) => {
                             name={'show_cheatsheet'}
                             description={'Show the cron cheatsheet for some examples.'}
                             label={'Show Cheatsheet'}
-                            defaultChecked={showCheatsheet}
-                            onChange={() => setShowCheetsheet((s) => !s)}
+                            checked={showCheatsheet}
+                            onChange={setShowCheetsheet}
                         />
                         {showCheatsheet && (
                             <div css={tw`block md:flex w-full`}>
