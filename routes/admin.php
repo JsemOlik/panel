@@ -244,10 +244,11 @@ Route::group(['prefix' => 'nests'], function () {
     Route::patch('/egg/{egg:id}', [Admin\Nests\EggController::class, 'update']);
     Route::patch('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'update']);
     Route::patch('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'update'])->name('admin.nests.egg.variables.edit');
-    Route::patch('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'update'])->name('admin.nests.egg.shortcuts.edit');
+    // The controller checks the shortcut belongs to the egg, the relation isn't named after the route parameter.
+    Route::patch('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'update'])->withoutScopedBindings()->name('admin.nests.egg.shortcuts.edit');
 
     Route::delete('/view/{nest:id}', [Admin\Nests\NestController::class, 'destroy']);
     Route::delete('/egg/{egg:id}', [Admin\Nests\EggController::class, 'destroy']);
     Route::delete('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'destroy']);
-    Route::delete('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'destroy']);
+    Route::delete('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'destroy'])->withoutScopedBindings();
 });

@@ -22,9 +22,12 @@
         </div>
         <div class="form-group col-sm-4">
             <label class="control-label">&nbsp;</label>
-            <div class="checkbox" style="margin-top: 5px;">
-                <input type="hidden" name="arguments[{{ $index }}][required]" value="0" />
-                <label><input type="checkbox" name="arguments[{{ $index }}][required]" value="1" {{ !empty($argument['required']) ? 'checked' : '' }} /> Required</label>
+            @php($checkboxId = 'shortcut-' . (isset($shortcut) && $shortcut ? $shortcut->id : 'new') . '-argument-' . $index . '-required')
+            <input type="hidden" name="arguments[{{ $index }}][required]" value="0" />
+            {{-- The admin theme styles the label that follows the checkbox, so they have to be siblings. --}}
+            <div class="checkbox checkbox-primary no-margin-bottom" style="margin-top: 5px;">
+                <input id="{{ $checkboxId }}" type="checkbox" name="arguments[{{ $index }}][required]" value="1" {{ !empty($argument['required']) ? 'checked' : '' }} />
+                <label for="{{ $checkboxId }}">Required</label>
             </div>
         </div>
     </div>

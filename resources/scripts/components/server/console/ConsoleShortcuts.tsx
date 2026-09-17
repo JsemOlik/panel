@@ -67,7 +67,11 @@ const ArgumentsDialog = ({ shortcut, onClose, onSend }: ArgumentsDialogProps) =>
                                     placeholder={arg.placeholder || undefined}
                                     value={values[arg.key] ?? ''}
                                     hasError={invalid}
-                                    onChange={(e) => setValues((v) => ({ ...v, [arg.key]: e.currentTarget.value }))}
+                                    onChange={(e) => {
+                                        // Read the value now, React 16 reuses the event before the updater runs.
+                                        const value = e.currentTarget.value;
+                                        setValues((v) => ({ ...v, [arg.key]: value }));
+                                    }}
                                 />
                                 {invalid ? (
                                     <p className={'mt-1.5 text-xs text-red-400'}>This field is required.</p>
