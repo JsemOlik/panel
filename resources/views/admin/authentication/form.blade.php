@@ -35,7 +35,12 @@
                         <div class="row">
                             <div class="form-group col-xs-6">
                                 <label for="pColor" class="control-label">Color</label>
-                                <input type="color" id="pColor" name="color" class="form-control" style="padding: 2px 4px;" value="{{ $value('color', '#2563eb') }}">
+                                <input type="color" id="pColor" name="color" class="form-control" value="{{ $value('color', '#2563eb') }}" style="padding: 2px 4px; @if($bool('use_primary_color', false)) opacity: .5; pointer-events: none; @endif">
+                                <input type="hidden" name="use_primary_color" value="0">
+                                <div class="checkbox checkbox-primary no-margin-bottom">
+                                    <input type="checkbox" id="pUsePrimaryColor" name="use_primary_color" value="1" @if($bool('use_primary_color', false)) checked @endif>
+                                    <label for="pUsePrimaryColor">Use the primary color</label>
+                                </div>
                             </div>
                             <div class="form-group col-xs-6">
                                 <label for="pSortOrder" class="control-label">Order</label>
@@ -55,7 +60,7 @@
                         </div>
                         <label class="control-label">Preview</label>
                         <div style="background: #050a17; padding: 16px; border-radius: 6px;">
-                            <div id="buttonPreview" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; background-color: {{ $value('color', '#2563eb') }};">
+                            <div id="buttonPreview" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; background-color: {{ $bool('use_primary_color', false) ? \Pterodactyl\Models\OAuthProvider::DEFAULT_PRIMARY_COLOR : $value('color', '#2563eb') }};">
                                 <img id="logoPreview" alt="" style="width: 20px; height: 20px; object-fit: contain; @if(!($provider && $provider->logo)) display: none; @endif" src="{{ $provider && $provider->logo ? route('admin.authentication.logo', $provider->id) : '' }}">
                                 <span>Pokračovat přes <span id="namePreview">{{ $value('name', '…') }}</span></span>
                             </div>
@@ -223,9 +228,15 @@
         $('#pName').on('input', function () {
             $('#namePreview').text($(this).val() || '…');
         });
-        $('#pColor').on('input', function () {
-            $('#buttonPreview').css('background-color', $(this).val());
-        });
+        function updateButtonColor() {
+            const usePrimary = $('#pUsePrimaryColor').is(':checked');
+
+            $('#pColor').css({ opacity: usePrimary ? 0.5 : 1, 'pointer-events': usePrimary ? 'none' : '' });
+            $('#buttonPreview').css('background-color', usePrimary ? '{{ \Pterodactyl\Models\OAuthProvider::DEFAULT_PRIMARY_COLOR }}' : $('#pColor').val());
+        }
+
+        $('#pColor').on('input', updateButtonColor);
+        $('#pUsePrimaryColor').on('change', updateButtonColor);
         $('#pLogo').on('change', function () {
             const file = this.files[0];
             if (file) {

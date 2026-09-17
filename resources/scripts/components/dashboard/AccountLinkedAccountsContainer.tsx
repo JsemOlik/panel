@@ -7,6 +7,7 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { Dialog } from '@/components/elements/dialog';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { LinkedOAuthProvider, unlinkOAuthProvider, useLinkedOAuthProviders } from '@/api/account/oauth';
 import useFlash, { useFlashKey } from '@/plugins/useFlash';
 import { oauthErrorMessage, oauthRedirectUrl } from '@/lib/oauth';
@@ -85,8 +86,11 @@ export default () => {
                                 <li key={provider.id} className={'flex items-center gap-4 p-4'}>
                                     <span
                                         aria-hidden={'true'}
-                                        style={{ backgroundColor: provider.color }}
-                                        className={'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg'}
+                                        style={provider.color ? { backgroundColor: provider.color } : undefined}
+                                        className={cn(
+                                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
+                                            !provider.color && 'bg-primary-500'
+                                        )}
                                     >
                                         {provider.logo ? (
                                             <img src={provider.logo} alt={''} className={'h-5 w-5 object-contain'} />

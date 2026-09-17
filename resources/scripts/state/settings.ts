@@ -3,7 +3,8 @@ import { action, Action } from 'easy-peasy';
 export interface OAuthProvider {
     id: string;
     name: string;
-    color: string;
+    // Null when the provider uses the primary color.
+    color: string | null;
     logo: string | null;
 }
 

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $uuid
  * @property string $name
  * @property string $color
+ * @property bool $use_primary_color
  * @property string|null $logo
  * @property bool $enabled
  * @property int $sort_order
@@ -39,6 +40,11 @@ class OAuthProvider extends Model
 {
     public const TOKEN_AUTH_METHODS = ['client_secret_post', 'client_secret_basic'];
 
+    /**
+     * The default primary color, used to preview providers that follow the user's primary color.
+     */
+    public const DEFAULT_PRIMARY_COLOR = '#8a4cf5';
+
     protected $table = 'oauth_providers';
 
     protected $guarded = ['id', 'uuid', 'logo', 'created_at', 'updated_at'];
@@ -47,6 +53,7 @@ class OAuthProvider extends Model
 
     protected $attributes = [
         'color' => '#2563eb',
+        'use_primary_color' => false,
         'enabled' => false,
         'sort_order' => 0,
         'token_auth_method' => 'client_secret_post',
@@ -59,6 +66,7 @@ class OAuthProvider extends Model
 
     protected $casts = [
         'client_secret' => 'encrypted',
+        'use_primary_color' => 'boolean',
         'enabled' => 'boolean',
         'use_pkce' => 'boolean',
         'link_by_email' => 'boolean',
@@ -70,6 +78,7 @@ class OAuthProvider extends Model
         'uuid' => 'required|string|size:36|unique:oauth_providers,uuid',
         'name' => 'required|string|between:1,191',
         'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        'use_primary_color' => 'boolean',
         'logo' => 'nullable|string|max:191',
         'enabled' => 'boolean',
         'sort_order' => 'integer|min:0',
@@ -148,12 +157,21 @@ class OAuthProvider extends Model
     /**
      * The data the login page and account settings need to display the provider.
      */
+    /**
+     * The color shown for the provider in the admin area.
+     */
+    public function getDisplayColor(): string
+    {
+        return $this->use_primary_color ? self::DEFAULT_PRIMARY_COLOR : $this->color;
+    }
+
     public function toPublicArray(): array
     {
         return [
             'id' => $this->uuid,
             'name' => $this->name,
-            'color' => $this->color,
+            // The login page uses the viewer's primary color when there's no color.
+            'color' => $this->use_primary_color ? null : $this->color,
             'logo' => $this->getLogoUrl(),
         ];
     }

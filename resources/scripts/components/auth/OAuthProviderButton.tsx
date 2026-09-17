@@ -15,9 +15,10 @@ export default ({ provider, label, className, onClick, disabled }: Props) => (
         type={'button'}
         onClick={onClick}
         disabled={disabled}
-        style={{ backgroundColor: provider.color }}
+        style={provider.color ? { backgroundColor: provider.color } : undefined}
         className={cn(
             'flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-white shadow-sm transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-800 disabled:pointer-events-none disabled:opacity-60',
+            !provider.color && 'bg-primary-500',
             className
         )}
     >

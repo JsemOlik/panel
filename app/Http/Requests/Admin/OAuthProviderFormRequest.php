@@ -17,6 +17,7 @@ class OAuthProviderFormRequest extends AdminFormRequest
 
         return array_merge($rules, [
             'enabled' => 'required|boolean',
+            'use_primary_color' => 'required|boolean',
             'use_pkce' => 'required|boolean',
             'link_by_email' => 'required|boolean',
             'allow_registration' => 'required|boolean',

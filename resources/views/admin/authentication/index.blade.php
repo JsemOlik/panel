@@ -71,7 +71,7 @@
                                 <tr>
                                     <td class="middle"><code>{{ $provider->id }}</code></td>
                                     <td class="middle">
-                                        <span style="display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; background-color: {{ $provider->color }};"></span>
+                                        <span style="display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; background-color: {{ $provider->getDisplayColor() }};"></span>
                                         <a href="{{ route('admin.authentication.view', $provider->id) }}">{{ $provider->name }}</a>
                                     </td>
                                     <td class="middle"><code>{{ $provider->authorize_url }}</code></td>
