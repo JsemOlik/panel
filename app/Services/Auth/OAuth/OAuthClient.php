@@ -57,7 +57,7 @@ class OAuthClient
 
         $id = self::string($data, $provider->identifier_field);
         if (is_null($id)) {
-            throw new OAuthException(OAuthException::PROVIDER_ERROR, sprintf('The userinfo response has no "%s" field.', $provider->identifier_field));
+            throw new OAuthException(OAuthException::PROVIDER_ERROR, sprintf('The userinfo response has no "%s" field, available fields: %s.', $provider->identifier_field, implode(', ', array_keys(Arr::dot($data))) ?: 'none'));
         }
 
         $verified = Arr::get($data, 'email_verified');
