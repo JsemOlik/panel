@@ -4,6 +4,7 @@ import styled from 'styled-components/macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import tw from 'twin.macro';
 import { BrandIcon } from '@/components/elements/BrandLogo';
+import { FooterText } from '@/components/elements/PageContentBlock';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
     title?: string;
@@ -63,15 +64,6 @@ const Content = styled.div`
     }
 `;
 
-const FooterLink = styled.a`
-    ${tw`no-underline`};
-    color: ${colors.muted};
-
-    &:hover {
-        color: ${colors.foreground};
-    }
-`;
-
 export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, ...props }, ref) => (
     <Wrapper>
         <Glow aria-hidden={'true'} />
@@ -99,17 +91,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, ...props }
                     {props.children}
                 </Form>
             </div>
-            <p css={tw`mt-10 text-center text-xs`} style={{ color: colors.muted }}>
-                <FooterLink href={'https://4camps.cz'} target={'_blank'} rel={'noopener noreferrer'}>
-                    4CAMPS
-                </FooterLink>
-                &nbsp;&middot;&nbsp;&copy; Zvědavý medvěd, z. s.
-                <br />
-                &copy; 2015 - {new Date().getFullYear()}&nbsp;
-                <FooterLink href={'https://pterodactyl.io'} target={'_blank'} rel={'noopener nofollow noreferrer'}>
-                    Pterodactyl Software
-                </FooterLink>
-            </p>
+            <FooterText css={tw`mt-10`} />
         </Content>
     </Wrapper>
 ));

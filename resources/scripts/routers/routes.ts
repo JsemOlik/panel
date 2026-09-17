@@ -9,6 +9,7 @@ import {
     DatabaseIcon,
     FolderIcon,
     GlobeAltIcon,
+    InformationCircleIcon,
     KeyIcon,
     PlayIcon,
     TerminalIcon,
@@ -28,6 +29,7 @@ import AccountOverviewContainer from '@/components/dashboard/AccountOverviewCont
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
 import AccountAppearanceContainer from '@/components/dashboard/AccountAppearanceContainer';
+import AccountAboutContainer from '@/components/dashboard/AccountAboutContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 
@@ -107,6 +109,13 @@ export default {
             icon: ClockIcon,
             description: 'Recent actions performed on your account.',
             component: ActivityLogContainer,
+        },
+        {
+            path: '/about',
+            name: 'O Pteru',
+            icon: InformationCircleIcon,
+            description: 'Aktuální verze a autoři aplikace.',
+            component: AccountAboutContainer,
         },
     ],
     server: [

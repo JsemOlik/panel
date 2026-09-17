@@ -4,19 +4,26 @@ import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
 
+const footerLink = tw`no-underline text-neutral-500 hover:text-neutral-300`;
+
+// The copyright line shown at the bottom of every page, including the login screens.
+export const FooterText = ({ className }: { className?: string }) => (
+    <p css={tw`text-center text-neutral-500 text-xs`} className={className}>
+        &copy; {new Date().getFullYear()}{' '}
+        <a href={'https://4camps.cz'} target={'_blank'} rel={'noopener noreferrer'} css={footerLink}>
+            4CAMPS
+        </a>
+        &nbsp;&middot;&nbsp;
+        <a href={'https://pterodactyl.io'} target={'_blank'} rel={'noopener nofollow noreferrer'} css={footerLink}>
+            Pterodactyl&reg;
+        </a>
+        &nbsp;&copy; 2015 - {new Date().getFullYear()}
+    </p>
+);
+
 export const PageFooter = () => (
     <ContentContainer css={tw`mb-4`}>
-        <p css={tw`text-center text-neutral-500 text-xs`}>
-            <a
-                rel={'noopener nofollow noreferrer'}
-                href={'https://pterodactyl.io'}
-                target={'_blank'}
-                css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
-            >
-                Pterodactyl&reg;
-            </a>
-            &nbsp;&copy; 2015 - {new Date().getFullYear()}
-        </p>
+        <FooterText />
     </ContentContainer>
 );
 
