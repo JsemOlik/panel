@@ -34,6 +34,14 @@ class SettingsServiceProvider extends ServiceProvider
     ];
 
     /**
+     * Keys that are only managed from the Panel, so they are loaded from the database
+     * even when the environment is configured to be the only source of settings.
+     */
+    protected array $panelKeys = [
+        'pterodactyl:auth:password_login',
+    ];
+
+    /**
      * Keys specific to the mail driver that are only grabbed from the database
      * when using the SMTP driver.
      */
@@ -60,9 +68,11 @@ class SettingsServiceProvider extends ServiceProvider
      */
     public function boot(ConfigRepository $config, Encrypter $encrypter, Log $log, SettingsRepositoryInterface $settings): void
     {
-        // Only set the email driver settings from the database if we
-        // are configured using SMTP as the driver.
-        if ($config->get('mail.default') === 'smtp') {
+        if ($config->get('pterodactyl.load_environment_only', false)) {
+            $this->keys = $this->panelKeys;
+        } elseif ($config->get('mail.default') === 'smtp') {
+            // Only set the email driver settings from the database if we
+            // are configured using SMTP as the driver.
             $this->keys = array_merge($this->keys, $this->emailKeys);
         }
 
