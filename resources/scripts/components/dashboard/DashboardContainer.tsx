@@ -14,6 +14,7 @@ import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
+import BulkPowerActions from '@/components/dashboard/BulkPowerActions';
 
 export default () => {
     const { search } = useLocation();
@@ -55,18 +56,21 @@ export default () => {
 
     return (
         <PageContentBlock title={'Dashboard'} showFlashKey={'dashboard'}>
-            {rootAdmin && (
-                <div css={tw`mb-2 flex justify-end items-center gap-2`}>
-                    <Label htmlFor={'show_all_servers'} className={'text-sm text-neutral-400'}>
-                        {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
-                    </Label>
-                    <Switch
-                        id={'show_all_servers'}
-                        checked={showOnlyAdmin}
-                        onCheckedChange={(checked: boolean) => setShowOnlyAdmin(checked)}
-                    />
-                </div>
-            )}
+            <div className={'mb-4 flex flex-wrap items-center justify-between gap-2'}>
+                {!(showOnlyAdmin && rootAdmin) ? <BulkPowerActions /> : <div />}
+                {rootAdmin && (
+                    <div className={'flex items-center gap-2'}>
+                        <Label htmlFor={'show_all_servers'} className={'text-sm text-neutral-400'}>
+                            {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
+                        </Label>
+                        <Switch
+                            id={'show_all_servers'}
+                            checked={showOnlyAdmin}
+                            onCheckedChange={(checked: boolean) => setShowOnlyAdmin(checked)}
+                        />
+                    </div>
+                )}
+            </div>
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
