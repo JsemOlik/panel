@@ -15,6 +15,42 @@
 @section('content')
 <div class="row">
     <div class="col-xs-12">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title"><i class="fa fa-fw fa-life-ring"></i> Potřebuješ pomoc?</h3>
+            </div>
+            <div class="box-body">
+                <p>
+                    Tohle je upravená verze Pterodactylu pro 4CAMPS. Pokud narazíš na jakýkoliv problém, napiš <strong>@jsemolik</strong> na Discordu,
+                    nebo ho označ na Discord serveru <strong>4CAMPS - Tým</strong>. S problémy s vlastními funkcemi se prosím neobracej na oficiální
+                    podporu Pterodactylu, ta s nimi pomoct nedokáže.
+                </p>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="no-margin-bottom"><strong>Při nahlášení problému uveď:</strong></p>
+                        <ul class="no-margin-bottom">
+                            <li>Co jsi dělal/a a co jsi čekal/a, že se stane.</li>
+                            <li>Adresu stránky a server nebo uživatele, kterého se problém týká.</li>
+                            <li>Přibližný čas, kdy se to stalo, aby šlo dohledat logy.</li>
+                            <li>Snímek obrazovky s chybovou hláškou.</li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="no-margin-bottom"><strong>Dobré vědět:</strong></p>
+                        <ul class="no-margin-bottom">
+                            <li>Nikdy na Discordu nesdílej hesla, API klíče ani OAuth client secrety.</li>
+                            <li>Poskytovatele OAuth přihlášení spravuješ v sekci <a href="{{ route('admin.authentication') }}">Authentication</a>.</li>
+                            <li>Zkratky konzole se nastavují pro každý egg v jeho záložce <strong>Shortcuts</strong>.</li>
+                            <li>Pokud přestane fungovat přihlášení a přihlášení heslem je vypnuté, spusť na serveru <code>php artisan p:auth:password-login --enable</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
         <div class="box
             @if($version->isLatestPanel())
                 box-success
