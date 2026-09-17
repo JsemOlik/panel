@@ -78,6 +78,27 @@ Route::group(['prefix' => 'settings'], function () {
 
 /*
 |--------------------------------------------------------------------------
+| Authentication Controller Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/authentication
+|
+*/
+Route::group(['prefix' => 'authentication'], function () {
+    Route::get('/', [Admin\AuthenticationController::class, 'index'])->name('admin.authentication');
+    Route::get('/new', [Admin\AuthenticationController::class, 'create'])->name('admin.authentication.new');
+    Route::get('/view/{provider:id}', [Admin\AuthenticationController::class, 'view'])->name('admin.authentication.view');
+    Route::get('/view/{provider:id}/logo', [Admin\AuthenticationController::class, 'logo'])->name('admin.authentication.logo');
+
+    Route::post('/new', [Admin\AuthenticationController::class, 'store']);
+
+    Route::patch('/', [Admin\AuthenticationController::class, 'updatePasswordLogin']);
+    Route::patch('/view/{provider:id}', [Admin\AuthenticationController::class, 'update']);
+    Route::delete('/view/{provider:id}', [Admin\AuthenticationController::class, 'delete'])->name('admin.authentication.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
 | User Controller Routes
 |--------------------------------------------------------------------------
 |

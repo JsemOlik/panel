@@ -11,6 +11,7 @@ import {
     GlobeAltIcon,
     InformationCircleIcon,
     KeyIcon,
+    LinkIcon,
     PlayIcon,
     TerminalIcon,
     UserIcon,
@@ -28,6 +29,7 @@ import SettingsContainer from '@/components/server/settings/SettingsContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
+import AccountLinkedAccountsContainer from '@/components/dashboard/AccountLinkedAccountsContainer';
 import AccountAppearanceContainer from '@/components/dashboard/AccountAppearanceContainer';
 import AccountAboutContainer from '@/components/dashboard/AccountAboutContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
@@ -95,6 +97,13 @@ export default {
             icon: KeyIcon,
             description: 'Manage the public keys you can use to sign in to your servers over SFTP.',
             component: AccountSSHContainer,
+        },
+        {
+            path: '/linked-accounts',
+            name: 'Linked Accounts',
+            icon: LinkIcon,
+            description: 'Link the services you can use to sign in to the Panel.',
+            component: AccountLinkedAccountsContainer,
         },
         {
             path: '/appearance',

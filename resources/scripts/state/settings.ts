@@ -1,5 +1,12 @@
 import { action, Action } from 'easy-peasy';
 
+export interface OAuthProvider {
+    id: string;
+    name: string;
+    color: string;
+    logo: string | null;
+}
+
 export interface SiteSettings {
     name: string;
     locale: string;
@@ -7,6 +14,10 @@ export interface SiteSettings {
     recaptcha: {
         enabled: boolean;
         siteKey: string;
+    };
+    auth: {
+        passwordLogin: boolean;
+        providers: OAuthProvider[];
     };
 }
 

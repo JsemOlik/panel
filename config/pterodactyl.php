@@ -36,6 +36,9 @@ return [
     */
 
     'auth' => [
+        // Whether users can sign in with a username or email and password. It can be turned off
+        // from the admin area when at least one OAuth provider is enabled.
+        'password_login' => env('APP_PASSWORD_LOGIN', true),
         '2fa_required' => env('APP_2FA_REQUIRED', 0),
         '2fa' => [
             'bytes' => 32,

@@ -16,6 +16,9 @@ return [
         'recovery-token' => 'Used two-factor recovery token',
         'token' => 'Solved two-factor challenge',
         'ip-blocked' => 'Blocked request from unlisted IP address for :identifier',
+        'oauth' => [
+            'fail' => 'Failed log in with :provider',
+        ],
         'sftp' => [
             'fail' => 'Failed SFTP log in',
         ],
@@ -31,6 +34,10 @@ return [
         'api-key' => [
             'create' => 'Created new API key :identifier',
             'delete' => 'Deleted API key :identifier',
+        ],
+        'oauth' => [
+            'link' => 'Linked :provider account',
+            'unlink' => 'Unlinked :provider account',
         ],
         'ssh-key' => [
             'create' => 'Added SSH key :fingerprint to account',
