@@ -56,7 +56,7 @@ export default createGlobalStyle`
         border-right-width: 4px;
         border-left-width: 4px;
         -webkit-border-radius: 9px 4px;
-        -webkit-box-shadow: inset 0 0 0 1px #455369, inset 0 0 0 4px #1c2432;
+        -webkit-box-shadow: inset 0 0 0 1px rgb(var(--color-gray-500)), inset 0 0 0 4px rgb(var(--color-gray-600));
     }
 
     ::-webkit-scrollbar-track-piece {

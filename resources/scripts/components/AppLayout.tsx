@@ -3,10 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useStoreState } from 'easy-peasy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/outline';
 import tw from 'twin.macro';
 import NavigationBar from '@/components/NavigationBar';
-import Tooltip from '@/components/elements/tooltip/Tooltip';
 import { ApplicationStore } from '@/state';
 import { sidebarColors } from '@/components/elements/sidebar/Sidebar';
 import { Button } from '@/components/ui/button';
@@ -81,21 +79,6 @@ export default ({ sidebar, sidebarFooter, children }: Props) => {
         };
     }, [open]);
 
-    const collapseToggle = (
-        <Tooltip placement={'right'} content={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-            <Button
-                variant={'ghost'}
-                size={'icon'}
-                onClick={toggleCollapsed}
-                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                aria-expanded={!collapsed}
-                className={'text-neutral-400 [&_svg]:size-5'}
-            >
-                {collapsed ? <ChevronDoubleRightIcon /> : <ChevronDoubleLeftIcon />}
-            </Button>
-        </Tooltip>
-    );
-
     return (
         <div css={tw`flex min-h-screen`}>
             {/* Mobile & tablet: a drawer sliding in from the left, opened from the top bar. */}
@@ -150,27 +133,30 @@ export default ({ sidebar, sidebarFooter, children }: Props) => {
                 <div
                     css={[
                         tw`flex flex-shrink-0 items-center h-14 border-b`,
-                        collapsed ? tw`justify-center` : tw`justify-between pl-5 pr-3`,
+                        collapsed ? tw`justify-center` : tw`pl-5 pr-3`,
                     ]}
                     style={{ borderColor: sidebarColors.border }}
                 >
                     <Logo collapsed={collapsed} />
-                    {!collapsed && collapseToggle}
                 </div>
                 <div css={tw`flex-1 overflow-y-auto overflow-x-hidden`}>{sidebar?.(collapsed)}</div>
-                {(sidebarFooter || collapsed) && (
+                {sidebarFooter && (
                     <div
                         css={tw`flex flex-shrink-0 flex-col items-stretch gap-2 border-t p-3`}
                         style={{ borderColor: sidebarColors.border }}
                     >
-                        {sidebarFooter?.(collapsed)}
-                        {collapsed && <div css={tw`flex justify-center`}>{collapseToggle}</div>}
+                        {sidebarFooter(collapsed)}
                     </div>
                 )}
             </aside>
 
             <div css={tw`flex flex-col flex-1 min-w-0`}>
-                <NavigationBar onOpenSidebar={() => setOpen(true)} sidebarOpen={open} />
+                <NavigationBar
+                    onOpenSidebar={() => setOpen(true)}
+                    sidebarOpen={open}
+                    sidebarCollapsed={collapsed}
+                    onToggleSidebarCollapsed={toggleCollapsed}
+                />
                 <main css={tw`flex-1 min-w-0`}>{children}</main>
             </div>
         </div>

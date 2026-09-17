@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export const sidebarColors = {
-    background: '#070c1a',
-    foreground: '#cad5e2',
-    muted: '#90a1b9',
-    border: 'rgba(255, 255, 255, 0.1)',
-    hover: 'rgba(255, 255, 255, 0.05)',
+    background: 'var(--chrome-background)',
+    foreground: 'rgb(var(--color-gray-200))',
+    muted: 'rgb(var(--color-gray-400))',
+    border: 'var(--chrome-border)',
+    hover: 'var(--chrome-hover)',
 };
 
 type Icon = React.ComponentType<React.ComponentProps<'svg'>>;
@@ -24,7 +24,7 @@ interface LinkProps {
 
 // Plain ghost buttons laid out as a list; the active route is filled with the primary color.
 const linkClasses =
-    'w-full justify-start [&.active]:bg-primary-500 [&.active]:text-neutral-50 [&.active]:hover:bg-primary-600';
+    'w-full justify-start [&.active]:bg-primary-500 [&.active]:text-white [&.active]:hover:bg-primary-600';
 
 // A link within the sidebar. When the sidebar is collapsed only the icon is shown, with the
 // label moved into a tooltip.

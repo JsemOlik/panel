@@ -1,31 +1,21 @@
 const colors = require('tailwindcss/colors');
 
-// Dark slate/navy palette, converted from OKLCH to hex so colors can still be parsed
-// and alpha-blended at runtime (e.g. by the console charts).
-const gray = {
-    50: '#f9fafb',
-    100: '#e6ecf2',
-    200: '#cad5e2', // sidebar foreground
-    300: '#aebcce',
-    400: '#90a1b9', // muted foreground
-    500: '#455369',
-    600: '#1c2432', // secondary / muted surfaces
-    700: '#080f1c', // cards
-    800: '#050a17', // page background
-    900: '#030612',
-};
+// Both palettes are CSS variables holding space-separated RGB channels, so they can change at runtime.
+// The gray shades follow the user's theme (resources/scripts/lib/theme.ts) and the primary shades follow
+// the color picked under Account > Appearance (resources/scripts/lib/primaryColor.ts).
+const variablePalette = (name) =>
+    Object.fromEntries(
+        [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => [
+            shade,
+            ({ opacityValue }) =>
+                opacityValue === undefined
+                    ? `rgb(var(--color-${name}-${shade}))`
+                    : `rgb(var(--color-${name}-${shade}) / ${opacityValue})`,
+        ])
+    );
 
-// The primary color is picked by each user (Account > Appearance), so its shades are CSS variables
-// holding space-separated RGB channels. They are set at runtime by resources/scripts/lib/primaryColor.ts.
-const brand = Object.fromEntries(
-    [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => [
-        shade,
-        ({ opacityValue }) =>
-            opacityValue === undefined
-                ? `rgb(var(--color-primary-${shade}))`
-                : `rgb(var(--color-primary-${shade}) / ${opacityValue})`,
-    ])
-);
+const gray = variablePalette('gray');
+const brand = variablePalette('primary');
 
 module.exports = {
     content: ['./resources/scripts/**/*.{js,ts,tsx}'],

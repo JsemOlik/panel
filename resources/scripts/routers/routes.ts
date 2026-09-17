@@ -3,12 +3,16 @@ import {
     ArchiveIcon,
     CalendarIcon,
     ClockIcon,
+    CodeIcon,
     CogIcon,
+    ColorSwatchIcon,
     DatabaseIcon,
     FolderIcon,
     GlobeAltIcon,
+    KeyIcon,
     PlayIcon,
     TerminalIcon,
+    UserIcon,
     UsersIcon,
 } from '@heroicons/react/outline';
 import ServerConsole from '@/components/server/console/ServerConsoleContainer';
@@ -44,6 +48,13 @@ interface RouteDefinition {
     exact?: boolean;
 }
 
+interface AccountRouteDefinition extends RouteDefinition {
+    // The icon displayed next to the route name in the account settings navigation.
+    icon?: React.ComponentType<React.ComponentProps<'svg'>>;
+    // Shown below the page heading in the account settings.
+    description?: string;
+}
+
 interface ServerRouteDefinition extends RouteDefinition {
     permission: string | string[] | null;
     // The icon displayed next to the route name in the server sidebar.
@@ -54,7 +65,7 @@ interface ServerRouteDefinition extends RouteDefinition {
 
 interface Routes {
     // All of the routes available under "/account"
-    account: RouteDefinition[];
+    account: AccountRouteDefinition[];
     // All of the routes available under "/server/:id"
     server: ServerRouteDefinition[];
 }
@@ -64,27 +75,37 @@ export default {
         {
             path: '/',
             name: 'Account',
+            icon: UserIcon,
+            description: 'Change your password and email address, and secure your account with two-step verification.',
             component: AccountOverviewContainer,
             exact: true,
         },
         {
             path: '/api',
             name: 'API Credentials',
+            icon: CodeIcon,
+            description: 'Create and manage the keys used to access the Panel through its API.',
             component: AccountApiContainer,
         },
         {
             path: '/ssh',
             name: 'SSH Keys',
+            icon: KeyIcon,
+            description: 'Manage the public keys you can use to sign in to your servers over SFTP.',
             component: AccountSSHContainer,
         },
         {
             path: '/appearance',
             name: 'Appearance',
+            icon: ColorSwatchIcon,
+            description: 'Choose how the Panel looks. Changes apply immediately, there is nothing to save.',
             component: AccountAppearanceContainer,
         },
         {
             path: '/activity',
             name: 'Activity',
+            icon: ClockIcon,
+            description: 'Recent actions performed on your account.',
             component: ActivityLogContainer,
         },
     ],

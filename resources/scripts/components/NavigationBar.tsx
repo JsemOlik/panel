@@ -1,106 +1,98 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faCogs, faLayerGroup, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
+import { MenuIcon, MoonIcon, SunIcon } from '@heroicons/react/outline';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
-import tw, { theme } from 'twin.macro';
-import styled from 'styled-components/macro';
-import http from '@/api/http';
-import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
-import Avatar from '@/components/Avatar';
+import AccountMenu from '@/components/AccountMenu';
 import { BrandIcon } from '@/components/elements/BrandLogo';
-
-const RightNavigation = styled.div`
-    & > a,
-    & > button,
-    & > .navigation-link {
-        ${tw`flex items-center h-full no-underline text-neutral-300 px-6 cursor-pointer transition-all duration-150`};
-
-        &:active,
-        &:hover {
-            ${tw`text-neutral-100 bg-black`};
-        }
-
-        &:active,
-        &:hover,
-        &.active {
-            box-shadow: inset 0 -2px ${theme`colors.cyan.600`.toString()};
-        }
-    }
-`;
+import { sidebarColors } from '@/components/elements/sidebar/Sidebar';
+import { Button } from '@/components/ui/button';
+import { setThemePreference, useTheme } from '@/lib/theme';
 
 interface Props {
     onOpenSidebar?: () => void;
     sidebarOpen?: boolean;
+    sidebarCollapsed?: boolean;
+    onToggleSidebarCollapsed?: () => void;
 }
 
-export default ({ onOpenSidebar, sidebarOpen }: Props) => {
-    const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
-    const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
+// A panel-shaped icon, the left column filled in while the sidebar is expanded.
+const SidebarIcon = ({ collapsed }: { collapsed?: boolean }) => (
+    <svg viewBox={'0 0 24 24'} fill={'none'} stroke={'currentColor'} strokeWidth={1.75} aria-hidden={'true'}>
+        <rect x={3} y={4} width={18} height={16} rx={2.5} />
+        <path d={'M9 4v16'} />
+        {!collapsed && <path d={'M5.5 8h1M5.5 11h1'} strokeLinecap={'round'} />}
+    </svg>
+);
 
-    const onTriggerLogout = () => {
-        setIsLoggingOut(true);
-        http.post('/auth/logout').finally(() => {
-            // @ts-expect-error this is valid
-            window.location = '/';
-        });
-    };
+export default ({ onOpenSidebar, sidebarOpen, sidebarCollapsed, onToggleSidebarCollapsed }: Props) => {
+    const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
+    const { theme } = useTheme();
+
+    const sidebarLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    const themeLabel = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
 
     return (
-        <div
-            className={'w-full border-b shadow-md overflow-x-auto'}
-            style={{ backgroundColor: '#070c1a', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+        <header
+            className={'w-full border-b'}
+            style={{ backgroundColor: sidebarColors.background, borderColor: sidebarColors.border }}
         >
-            <SpinnerOverlay visible={isLoggingOut} />
-            <div className={'w-full flex items-center h-[3.5rem]'}>
-                <div className={'flex flex-1 items-center gap-2 px-2 lg:hidden'}>
-                    <button
-                        type={'button'}
-                        onClick={onOpenSidebar}
-                        aria-label={'Open sidebar'}
-                        aria-expanded={sidebarOpen}
-                        className={'p-2 text-neutral-300 hover:text-neutral-50'}
-                    >
-                        <FontAwesomeIcon icon={faBars} fixedWidth />
-                    </button>
-                    <Link to={'/'} className={'flex items-center no-underline'}>
-                        <BrandIcon title={name} className={'block w-8 h-8'} />
-                    </Link>
-                </div>
-                <div className={'hidden flex-1 lg:block'} />
-                <RightNavigation className={'flex h-full items-center justify-center'}>
-                    <SearchContainer />
-                    <Tooltip placement={'bottom'} content={'Dashboard'}>
-                        <NavLink to={'/'} exact>
-                            <FontAwesomeIcon icon={faLayerGroup} />
-                        </NavLink>
-                    </Tooltip>
-                    {rootAdmin && (
-                        <Tooltip placement={'bottom'} content={'Admin'}>
-                            <a href={'/admin'} rel={'noreferrer'}>
-                                <FontAwesomeIcon icon={faCogs} />
-                            </a>
+            <div
+                className={
+                    'grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-2 px-2 sm:px-4 md:grid-cols-[1fr_minmax(0,28rem)_1fr]'
+                }
+            >
+                <div className={'flex items-center gap-2'}>
+                    <div className={'flex items-center gap-2 lg:hidden'}>
+                        <Button
+                            variant={'ghost'}
+                            size={'icon'}
+                            onClick={onOpenSidebar}
+                            aria-label={'Open sidebar'}
+                            aria-expanded={sidebarOpen}
+                            className={'text-neutral-300 [&_svg]:size-5'}
+                        >
+                            <MenuIcon />
+                        </Button>
+                        <Link to={'/'} className={'flex items-center no-underline'}>
+                            <BrandIcon title={name} className={'block h-8 w-8'} />
+                        </Link>
+                    </div>
+                    {onToggleSidebarCollapsed && (
+                        <Tooltip placement={'bottom'} content={sidebarLabel}>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                onClick={onToggleSidebarCollapsed}
+                                aria-label={sidebarLabel}
+                                aria-expanded={!sidebarCollapsed}
+                                className={'hidden text-neutral-300 lg:inline-flex [&_svg]:size-5'}
+                            >
+                                <SidebarIcon collapsed={sidebarCollapsed} />
+                            </Button>
                         </Tooltip>
                     )}
-                    <Tooltip placement={'bottom'} content={'Account Settings'}>
-                        <NavLink to={'/account'}>
-                            <span className={'flex items-center w-5 h-5'}>
-                                <Avatar.User />
-                            </span>
-                        </NavLink>
+                </div>
+                <div className={'flex justify-center'}>
+                    <SearchContainer />
+                </div>
+                <div className={'flex items-center justify-end gap-1 sm:gap-2'}>
+                    <Tooltip placement={'bottom'} content={themeLabel}>
+                        <Button
+                            variant={'ghost'}
+                            size={'icon'}
+                            onClick={() => setThemePreference(theme === 'dark' ? 'light' : 'dark')}
+                            aria-label={themeLabel}
+                            className={'text-neutral-300 [&_svg]:size-5'}
+                        >
+                            {theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+                        </Button>
                     </Tooltip>
-                    <Tooltip placement={'bottom'} content={'Sign Out'}>
-                        <button onClick={onTriggerLogout}>
-                            <FontAwesomeIcon icon={faSignOutAlt} />
-                        </button>
-                    </Tooltip>
-                </RightNavigation>
+                    <AccountMenu />
+                </div>
             </div>
-        </div>
+        </header>
     );
 };

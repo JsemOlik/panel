@@ -113,7 +113,9 @@ export default () => {
                 <ContentContainer css={tw`flex items-center justify-center`}>
                     {error === 'connecting' ? (
                         <>
-                            <Spinner size={'small'} />
+                            <span css={tw`flex text-red-100`}>
+                                <Spinner size={'small'} />
+                            </span>
                             <p css={tw`ml-2 text-sm text-red-100`}>
                                 We&apos;re having some trouble connecting to your server, please wait...
                             </p>

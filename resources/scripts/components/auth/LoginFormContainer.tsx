@@ -12,12 +12,12 @@ type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, 
 
 // 4CAMPS brand palette for the authentication screens.
 const colors = {
-    background: '#050a17',
+    background: 'rgb(var(--color-gray-800))',
     primary: 'rgb(var(--color-primary-500))',
     primaryHover: 'rgb(var(--color-primary-500) / 0.9)',
     glow: 'rgb(var(--color-primary-500) / 0.1)',
-    foreground: '#f4f7fa',
-    muted: '#90a1b9',
+    foreground: 'rgb(var(--color-gray-100))',
+    muted: 'rgb(var(--color-gray-400))',
 };
 
 const Wrapper = styled.div`

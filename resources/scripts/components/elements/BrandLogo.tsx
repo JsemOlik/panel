@@ -23,7 +23,7 @@ export const BrandIcon = ({ title, ...props }: Props) => (
 export const BrandLogo = ({ title, ...props }: Props) => (
     <svg viewBox={'0 0 87 32'} fill={'none'} xmlns={'http://www.w3.org/2000/svg'} role={'img'} {...props}>
         {title && <title>{title}</title>}
-        <path d={text} fill={'white'} />
+        <path d={text} style={{ fill: 'rgb(var(--color-gray-50))' }} />
         <rect width={32} height={32} rx={8} fill={background} />
         <path d={mark} fill={'white'} />
     </svg>

@@ -13,10 +13,12 @@ import { useState } from 'react';
 import { deepmerge, deepmergeCustom } from 'deepmerge-ts';
 import { theme } from 'twin.macro';
 import { primaryRgba } from '@/lib/primaryColor';
+import { grayRgba } from '@/lib/theme';
 
 ChartJS.register(LineElement, PointElement, Filler, LinearScale);
 
-const options: ChartOptions<'line'> = {
+// Built on each use, since the grid and label colors follow the current theme.
+const getBaseOptions = (): ChartOptions<'line'> => ({
     responsive: true,
     animation: false,
     plugins: {
@@ -45,13 +47,13 @@ const options: ChartOptions<'line'> = {
             type: 'linear',
             grid: {
                 display: true,
-                color: theme('colors.gray.700'),
+                color: grayRgba(700),
                 drawBorder: false,
             },
             ticks: {
                 display: true,
                 count: 3,
-                color: theme('colors.gray.200'),
+                color: grayRgba(200),
                 font: {
                     family: theme('fontFamily.sans'),
                     size: 11,
@@ -68,10 +70,10 @@ const options: ChartOptions<'line'> = {
             tension: 0.15,
         },
     },
-};
+});
 
 function getOptions(opts?: DeepPartial<ChartOptions<'line'>> | undefined): ChartOptions<'line'> {
-    return deepmerge(options, opts || {});
+    return deepmerge(getBaseOptions(), opts || {});
 }
 
 type ChartDatasetCallback = (value: ChartDataset<'line'>, index: number) => ChartDataset<'line'>;

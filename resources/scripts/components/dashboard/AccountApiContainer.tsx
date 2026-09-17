@@ -45,11 +45,11 @@ export default () => {
     return (
         <PageContentBlock title={'Account API'}>
             <FlashMessageRender byKey={'account'} />
-            <div css={tw`md:flex flex-nowrap my-10`}>
-                <ContentBox title={'Create API Key'} css={tw`flex-none w-full md:w-1/2`}>
+            <div css={tw`lg:flex flex-nowrap`}>
+                <ContentBox title={'Create API Key'} css={tw`flex-none w-full lg:w-1/2`}>
                     <CreateApiKeyForm onKeyCreated={(key) => setKeys((s) => [...s!, key])} />
                 </ContentBox>
-                <ContentBox title={'API Keys'} css={tw`flex-1 overflow-hidden mt-8 md:mt-0 md:ml-8`}>
+                <ContentBox title={'API Keys'} css={tw`flex-1 overflow-hidden mt-8 lg:mt-0 lg:ml-8`}>
                     <SpinnerOverlay visible={loading} />
                     <Dialog.Confirm
                         title={'Delete API Key'}
