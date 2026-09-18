@@ -104,7 +104,12 @@ final class WingsConsoleClient
         $token = $this->tokenBroker->mintToken($this->server);
         $url = $this->tokenBroker->socketUrl($this->server);
 
-        ($this->connector)($url)->then(
+        // Wings refuses the upgrade with a bare 403 unless the Origin header matches its
+        // configured panel location (see CheckOrigin in wings/router/websocket/websocket.go).
+        // A browser sets this automatically, which is why the handshake works there and not
+        // here; without it the daemon connects, is rejected, and retries forever while logging
+        // only "403 Forbidden" with no indication that a header is the reason.
+        ($this->connector)($url, [], ['Origin' => rtrim(config('app.url'), '/')])->then(
             function (WebSocket $conn) use ($token) {
                 if ($this->stopped) {
                     $conn->close();

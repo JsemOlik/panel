@@ -147,11 +147,18 @@ class ConsumeConsoleArchiveCommand extends Command
     {
         $eligible = Server::query()
             ->with('node')
-            ->whereNotIn('status', [
-                Server::STATUS_INSTALLING,
-                Server::STATUS_INSTALL_FAILED,
-                Server::STATUS_SUSPENDED,
-            ])
+            // A healthy, fully-installed server stores NULL in `status` — the column only
+            // records exceptional states. `status NOT IN (...)` evaluates to NULL rather than
+            // true for those rows, so a bare whereNotIn() silently excludes every normal server
+            // and the daemon watches nothing at all.
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhereNotIn('status', [
+                        Server::STATUS_INSTALLING,
+                        Server::STATUS_INSTALL_FAILED,
+                        Server::STATUS_SUSPENDED,
+                    ]);
+            })
             ->get()
             ->keyBy('id');
 
