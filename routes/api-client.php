@@ -88,6 +88,7 @@ Route::group([
     Route::group(['prefix' => '/players'], function () {
         Route::get('/', [Client\Servers\PlayerController::class, 'index'])->name('api:client:server.players');
         Route::get('/{player}/sessions', [Client\Servers\PlayerController::class, 'sessions'])->name('api:client:server.players.sessions');
+        Route::post('/{player}/action', [Client\Servers\PlayerController::class, 'action'])->name('api:client:server.players.action');
     });
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);

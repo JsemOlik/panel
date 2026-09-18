@@ -2,7 +2,13 @@
 
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
+use Illuminate\Http\Response;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Facades\Activity;
+use GuzzleHttp\Exception\BadResponseException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Pterodactyl\Services\Players\PlayerModerationService;
+use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 use Pterodactyl\Models\ServerPlayer;
 use Pterodactyl\Models\ServerPlayerSession;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
@@ -10,6 +16,7 @@ use Pterodactyl\Transformers\Api\Client\ServerPlayerTransformer;
 use Pterodactyl\Transformers\Api\Client\ServerPlayerSessionTransformer;
 use Pterodactyl\Http\Requests\Api\Client\Servers\GetServerPlayersRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\GetServerPlayerSessionsRequest;
+use Pterodactyl\Http\Requests\Api\Client\Servers\SendPlayerActionRequest;
 
 /**
  * Serves the player presence roster and per-player join/leave history derived from console
@@ -22,6 +29,11 @@ use Pterodactyl\Http\Requests\Api\Client\Servers\GetServerPlayerSessionsRequest;
  */
 class PlayerController extends ClientApiController
 {
+    public function __construct(private PlayerModerationService $moderation)
+    {
+        parent::__construct();
+    }
+
     /**
      * Returns the current roster for this server: every player ever observed, ordered online
      * first then by most recently seen, optionally filtered to just online/offline.
@@ -65,5 +77,47 @@ class PlayerController extends ClientApiController
         return $this->fractal->collection($sessions)
             ->transformWith($this->getTransformer(ServerPlayerSessionTransformer::class))
             ->toArray();
+    }
+
+    /**
+     * Messages, kicks or bans a named player by issuing the corresponding console command.
+     *
+     * Requires `players.moderate` rather than `players.read`, and the exact command sent is
+     * recorded to the activity log: these are moderation actions taken against children, so who
+     * did what needs to be answerable afterwards without reading the raw console.
+     *
+     * A rejected target or malformed text is a 422 rather than a 500 — see
+     * PlayerModerationService for why those inputs are refused instead of escaped.
+     */
+    public function action(SendPlayerActionRequest $request, Server $server, string $player): Response
+    {
+        $validated = $request->validated();
+
+        try {
+            $command = $this->moderation->send(
+                $server,
+                $validated['action'],
+                $player,
+                $validated['text'] ?? null,
+            );
+        } catch (\InvalidArgumentException $exception) {
+            throw new HttpException(Response::HTTP_UNPROCESSABLE_ENTITY, $exception->getMessage(), $exception);
+        } catch (DaemonConnectionException $exception) {
+            $previous = $exception->getPrevious();
+
+            if ($previous instanceof BadResponseException
+                && $previous->getResponse()->getStatusCode() === Response::HTTP_BAD_GATEWAY) {
+                throw new HttpException(Response::HTTP_BAD_GATEWAY, 'Server must be online to act on players.', $exception);
+            }
+
+            throw $exception;
+        }
+
+        Activity::event('server:player.' . $validated['action'])
+            ->property('player', $player)
+            ->property('command', $command)
+            ->log();
+
+        return $this->returnNoContent();
     }
 }

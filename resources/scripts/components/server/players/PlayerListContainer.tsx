@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useServerPlayers } from '@/api/server/players/getServerPlayers';
 import { useServerPlayerSessions } from '@/api/server/players/getServerPlayerSessions';
+import sendPlayerAction, { PlayerAction } from '@/api/server/players/sendPlayerAction';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import { useFlashKey } from '@/plugins/useFlash';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import Spinner from '@/components/elements/Spinner';
+import Can from '@/components/elements/Can';
+import Input from '@/components/elements/Input';
+import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/elements/dialog';
+import { ServerContext } from '@/state/server';
 import { ServerPlayer } from '@definitions/players';
 import { format, formatDistanceToNow } from 'date-fns';
 
@@ -85,30 +91,170 @@ const PlayerSessionHistory = ({ player }: { player: string }) => {
     );
 };
 
+/**
+ * Copy for each moderation action, kept in one place so the dialog, its button and the text field
+ * cannot drift apart. `destructive` drives the red confirm button and the warning icon: a kick is
+ * an interruption, a ban is not something to fire off by accident on a misread row.
+ */
+const ACTION_COPY: Record<
+    PlayerAction,
+    { title: string; label: string; confirm: string; required: boolean; destructive: boolean; help: string }
+> = {
+    message: {
+        title: 'Send a private message',
+        label: 'Message',
+        confirm: 'Send message',
+        required: true,
+        destructive: false,
+        help: 'Sent with /tell, so only this player sees it.',
+    },
+    kick: {
+        title: 'Kick from the server',
+        label: 'Reason (optional)',
+        confirm: 'Kick player',
+        required: false,
+        destructive: true,
+        help: 'Disconnects the player. They can rejoin immediately. The reason is shown to them.',
+    },
+    ban: {
+        title: 'Ban from the server',
+        label: 'Reason (optional)',
+        confirm: 'Ban player',
+        required: false,
+        destructive: true,
+        help: 'Adds the player to the server ban list. Undo this in-game with /pardon.',
+    },
+};
+
+/**
+ * Collects the text for one moderation action and sends it.
+ *
+ * The command itself is built server-side from the action and the player's roster row — this only
+ * ever sends the action name and free text, so there is no place here where a stray newline could
+ * turn one action into two console commands.
+ */
+const PlayerActionDialog = ({
+    player,
+    action,
+    onClose,
+}: {
+    player: string;
+    action: PlayerAction | null;
+    onClose: () => void;
+}) => {
+    const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const { clearFlashes, clearAndAddHttpError } = useFlashKey(`server:players:${player}`);
+    const [text, setText] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    // Never carry the previous action's text into the next dialog — a kick reason sent as a
+    // private message would be an unpleasant surprise.
+    useEffect(() => setText(''), [action, player]);
+
+    if (action === null) {
+        return null;
+    }
+
+    const copy = ACTION_COPY[action];
+
+    const submit = () => {
+        setSubmitting(true);
+        clearFlashes();
+
+        sendPlayerAction(uuid, player, action, text.trim() || undefined)
+            .then(() => onClose())
+            .catch((error) => clearAndAddHttpError(error))
+            .then(() => setSubmitting(false));
+    };
+
+    return (
+        <Dialog open onClose={onClose} title={`${copy.title} — ${player}`}>
+            {copy.destructive && <Dialog.Icon type={'danger'} position={'container'} />}
+            <FlashMessageRender byKey={`server:players:${player}`} className={'mb-4'} />
+            <p className={'text-sm text-neutral-400 mb-3'}>{copy.help}</p>
+            <label
+                className={'block text-xs uppercase tracking-wide text-neutral-400 mb-1'}
+                htmlFor={'player-action-text'}
+            >
+                {copy.label}
+            </label>
+            <Input
+                id={'player-action-text'}
+                autoFocus
+                value={text}
+                maxLength={256}
+                disabled={submitting}
+                onChange={(e) => setText(e.currentTarget.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !(copy.required && text.trim().length === 0)) {
+                        submit();
+                    }
+                }}
+            />
+            <Dialog.Footer>
+                <Button variant={'secondary'} disabled={submitting} onClick={onClose}>
+                    Cancel
+                </Button>
+                <Button
+                    variant={copy.destructive ? 'destructive' : 'default'}
+                    disabled={submitting || (copy.required && text.trim().length === 0)}
+                    onClick={submit}
+                >
+                    {copy.confirm}
+                </Button>
+            </Dialog.Footer>
+        </Dialog>
+    );
+};
+
 const PlayerRow = ({ player }: { player: ServerPlayer }) => {
     const [expanded, setExpanded] = useState(false);
+    const [action, setAction] = useState<PlayerAction | null>(null);
     const online = player.status === 'online';
 
     return (
         <div className={'px-4 py-3'}>
-            <button
-                type={'button'}
-                className={'flex items-center w-full text-left'}
-                onClick={() => setExpanded((value) => !value)}
-            >
-                <PlayerHead name={player.name} online={online} />
-                <StatusDot online={online} />
-                <span className={'text-neutral-200 font-medium'}>{player.name}</span>
-                <span className={'ml-auto text-xs text-neutral-500'}>
-                    {online
-                        ? player.joinedAt
-                            ? `online since ${formatDistanceToNow(player.joinedAt, { addSuffix: true })}`
-                            : 'online'
-                        : player.lastSeenAt
-                        ? `last seen ${formatDistanceToNow(player.lastSeenAt, { addSuffix: true })}`
-                        : 'offline'}
-                </span>
-            </button>
+            <PlayerActionDialog player={player.name} action={action} onClose={() => setAction(null)} />
+            <div className={'flex items-center gap-3'}>
+                <button
+                    type={'button'}
+                    className={'flex items-center flex-1 min-w-0 text-left'}
+                    onClick={() => setExpanded((value) => !value)}
+                >
+                    <PlayerHead name={player.name} online={online} />
+                    <StatusDot online={online} />
+                    <span className={'text-neutral-200 font-medium truncate'}>{player.name}</span>
+                    <span className={'ml-auto pl-3 text-xs text-neutral-500 whitespace-nowrap'}>
+                        {online
+                            ? player.joinedAt
+                                ? `online since ${formatDistanceToNow(player.joinedAt, { addSuffix: true })}`
+                                : 'online'
+                            : player.lastSeenAt
+                            ? `last seen ${formatDistanceToNow(player.lastSeenAt, { addSuffix: true })}`
+                            : 'offline'}
+                    </span>
+                </button>
+                <Can action={'players.moderate'}>
+                    <div className={'flex items-center gap-1 shrink-0'}>
+                        {/* Messaging or kicking someone who is not connected does nothing, so those
+                            are hidden rather than shown failing. A ban is still meaningful while
+                            they are away — often that is exactly when it gets decided. */}
+                        {online && (
+                            <>
+                                <Button size={'sm'} variant={'ghost'} onClick={() => setAction('message')}>
+                                    Message
+                                </Button>
+                                <Button size={'sm'} variant={'ghost'} onClick={() => setAction('kick')}>
+                                    Kick
+                                </Button>
+                            </>
+                        )}
+                        <Button size={'sm'} variant={'destructive-ghost'} onClick={() => setAction('ban')}>
+                            Ban
+                        </Button>
+                    </div>
+                </Can>
+            </div>
             {expanded && (
                 <div className={'mt-2 ml-[1.125rem] pl-2 border-l border-neutral-700'}>
                     <PlayerSessionHistory player={player.name} />
