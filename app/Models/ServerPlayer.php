@@ -3,6 +3,7 @@
 namespace Pterodactyl\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -33,6 +34,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ServerPlayer extends Model
 {
+    use Prunable;
+
     public const RESOURCE_NAME = 'server_player';
 
     public const STATUS_ONLINE = 'online';
@@ -72,5 +75,32 @@ class ServerPlayer extends Model
     public function scopeOnline(Builder $builder): Builder
     {
         return $builder->where('status', self::STATUS_ONLINE);
+    }
+
+    /**
+     * Drops players who have been offline longer than config('players.prune_days').
+     *
+     * Only offline rows are eligible, and the cutoff is last_seen_at rather than created_at: a
+     * regular who has played every day for a year is not stale, and pruning by row age would
+     * remove them mid-session. A row with no last_seen_at at all has never been observed either
+     * way and is left alone rather than guessed at.
+     *
+     * Deliberately Prunable, not MassPrunable: a player's recorded history in
+     * server_player_sessions must survive them leaving the roster, so nothing cascades from here.
+     */
+    public function prunable(): Builder
+    {
+        $days = (int) config('players.prune_days', 7);
+
+        if ($days <= 0) {
+            // Never matches — a zero or negative setting disables pruning rather than deleting
+            // the entire roster on the next scheduled run.
+            return static::query()->whereRaw('1 = 0');
+        }
+
+        return static::query()
+            ->where('status', self::STATUS_OFFLINE)
+            ->whereNotNull('last_seen_at')
+            ->where('last_seen_at', '<=', now()->subDays($days));
     }
 }

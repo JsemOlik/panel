@@ -6,6 +6,7 @@ use Ramsey\Uuid\Uuid;
 use Pterodactyl\Models\ActivityLog;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Console\PruneCommand;
+use Pterodactyl\Models\ServerPlayer;
 use Pterodactyl\Models\ServerConsoleArchive;
 use Pterodactyl\Models\ServerResourceSample;
 use Pterodactyl\Models\ServerResourceStatRollup;
@@ -47,6 +48,12 @@ class Kernel extends ConsoleKernel
 
         if (config('activity.prune_days')) {
             $schedule->command(PruneCommand::class, ['--model' => [ActivityLog::class]])->daily();
+        }
+
+        // Drops long-offline players from the roster. Their recorded join/leave history is not
+        // touched — see ServerPlayer::prunable().
+        if (config('players.prune_days')) {
+            $schedule->command(PruneCommand::class, ['--model' => [ServerPlayer::class]])->daily();
         }
 
         if (config('console_archive.prune_days')) {
