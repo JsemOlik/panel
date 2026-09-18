@@ -2,6 +2,7 @@ import React, { lazy } from 'react';
 import {
     ArchiveIcon,
     CalendarIcon,
+    ChartBarIcon,
     ClockIcon,
     CodeIcon,
     CogIcon,
@@ -13,6 +14,7 @@ import {
     KeyIcon,
     LinkIcon,
     PlayIcon,
+    SearchIcon,
     TerminalIcon,
     UserIcon,
     UsersIcon,
@@ -34,6 +36,9 @@ import AccountAppearanceContainer from '@/components/dashboard/AccountAppearance
 import AccountAboutContainer from '@/components/dashboard/AccountAboutContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
+import ConsoleArchiveContainer from '@/components/server/consoleArchive/ConsoleArchiveContainer';
+import PlayerListContainer from '@/components/server/players/PlayerListContainer';
+import ServerResourceHistoryContainer from '@/components/server/history/ServerResourceHistoryContainer';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -218,6 +223,27 @@ export default {
             name: 'Activity',
             icon: ClockIcon,
             component: ServerActivityLogContainer,
+        },
+        {
+            path: '/console-archive',
+            permission: 'archive.*',
+            name: 'Console Archive',
+            icon: SearchIcon,
+            component: ConsoleArchiveContainer,
+        },
+        {
+            path: '/players',
+            permission: 'players.*',
+            name: 'Players',
+            icon: UsersIcon,
+            component: PlayerListContainer,
+        },
+        {
+            path: '/history',
+            permission: 'websocket.connect',
+            name: 'History',
+            icon: ChartBarIcon,
+            component: ServerResourceHistoryContainer,
         },
     ],
 } as Routes;

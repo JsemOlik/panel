@@ -19,11 +19,6 @@ done
 mkcert -install
 mkcert pterodactyl.test wings.pterodactyl.test minio.pterodactyl.test s3.minio.pterodactyl.test
 
-# Because we're doing Docker-in-Docker we actually need these paths to line
-# up correctly with the host system.
-sudo mkdir -p /var/lib/pterodactyl
-sudo chown $(id -u):$(id -g) /var/lib/pterodactyl
-
 mv -v *pterodactyl.test*-key.pem "$CERTS_DIR/pterodactyl.test-key.pem" || exit 1
 mv -v *pterodactyl.test*.pem "$CERTS_DIR/pterodactyl.test.pem" || exit 1
 cp -v "$(mkcert -CAROOT)/rootCA.pem" "$CERTS_DIR/root_ca.pem" || exit 1

@@ -103,6 +103,77 @@
         </div>
     </form>
     <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Connected Accounts</h3>
+            </div>
+            <div class="box-body table-responsive no-padding">
+                @if($oauthProviders->isEmpty())
+                    <p class="text-muted" style="padding: 15px;">
+                        No OAuth providers are configured.
+                        <a href="{{ route('admin.authentication') }}">Add one</a> to allow signing in with an external account.
+                    </p>
+                @else
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <th>Provider</th>
+                                <th>Status</th>
+                                <th>Account</th>
+                                <th>Last Used</th>
+                            </tr>
+                            {{-- Iterates providers, not identities: an unlinked provider is a row worth
+                                 seeing, since it is the reason a user cannot sign in with it. --}}
+                            @foreach($oauthProviders as $provider)
+                                @php($identity = $oauthIdentities->get($provider->id))
+                                <tr>
+                                    <td>
+                                        @if($provider->getLogoUrl())
+                                            <img src="{{ $provider->getLogoUrl() }}" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;" />
+                                        @else
+                                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:{{ $provider->getDisplayColor() }};"></span>
+                                        @endif
+                                        <a href="{{ route('admin.authentication.view', $provider->id) }}">{{ $provider->name }}</a>
+                                        @unless($provider->enabled)
+                                            {{-- Surfaced because a disabled provider still keeps its existing
+                                                 links, which would otherwise read as working sign-in. --}}
+                                            <span class="label label-default">Disabled</span>
+                                        @endunless
+                                    </td>
+                                    <td>
+                                        @if($identity)
+                                            <span class="label label-success">Linked</span>
+                                        @else
+                                            <span class="label label-default">Not linked</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($identity)
+                                            {{ $identity->email ?: '—' }}
+                                            <br />
+                                            <small class="text-muted">ID: {{ $identity->provider_user_id }}</small>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($identity && $identity->last_used_at)
+                                            <span title="{{ $identity->last_used_at->toDayDateTimeString() }}">{{ $identity->last_used_at->diffForHumans() }}</span>
+                                        @elseif($identity)
+                                            <span class="text-muted">Never</span>
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12">
         <div class="box box-danger">
             <div class="box-header with-border">
                 <h3 class="box-title">Delete User</h3>

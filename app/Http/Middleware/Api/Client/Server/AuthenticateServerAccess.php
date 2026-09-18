@@ -40,8 +40,15 @@ class AuthenticateServerAccess
         // server owner, a subuser, or a root admin. We'll leave it up to the controllers
         // to authenticate more detailed permissions if needed.
         if ($user->id !== $server->owner_id && !$user->root_admin) {
-            // Check for subuser status.
-            if (!$server->subusers->contains('user_id', $user->id)) {
+            // Check for subuser status. A subuser whose time-boxed grant has expired
+            // must be treated identically to a user who was never assigned to this
+            // server at all — this is the outermost gate every server-scoped client
+            // API route passes through (including the ones like GetServerRequest
+            // that intentionally skip the ServerPolicy check because they assume
+            // this middleware already did it), so if expiry is not enforced here an
+            // expired subuser can still view server metadata via
+            // GET /api/client/servers/{server}.
+            if (!$server->subusers->contains(fn ($subuser) => $subuser->user_id === $user->id && !$subuser->isExpired())) {
                 throw new NotFoundHttpException(trans('exceptions.api.resource_not_found'));
             }
         }

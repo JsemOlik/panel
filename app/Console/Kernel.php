@@ -6,12 +6,19 @@ use Ramsey\Uuid\Uuid;
 use Pterodactyl\Models\ActivityLog;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Console\PruneCommand;
+use Pterodactyl\Models\ServerPlayer;
+use Pterodactyl\Models\ServerPlayerSession;
+use Pterodactyl\Models\ServerConsoleArchive;
+use Pterodactyl\Models\ServerResourceSample;
+use Pterodactyl\Models\ServerResourceStatRollup;
 use Pterodactyl\Repositories\Eloquent\SettingsRepository;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Pterodactyl\Services\Telemetry\TelemetryCollectionService;
 use Pterodactyl\Console\Commands\Schedule\ProcessRunnableCommand;
 use Pterodactyl\Console\Commands\Maintenance\PruneOrphanedBackupsCommand;
 use Pterodactyl\Console\Commands\Maintenance\CleanServiceBackupFilesCommand;
+use Pterodactyl\Console\Commands\Maintenance\CollectResourceStatsCommand;
+use Pterodactyl\Console\Commands\Maintenance\RollupResourceHistoryCommand;
 
 class Kernel extends ConsoleKernel
 {
@@ -42,6 +49,34 @@ class Kernel extends ConsoleKernel
 
         if (config('activity.prune_days')) {
             $schedule->command(PruneCommand::class, ['--model' => [ActivityLog::class]])->daily();
+        }
+
+        // Drops long-offline players from the roster. Their recorded join/leave history is not
+        // touched — see ServerPlayer::prunable().
+        if (config('players.prune_days')) {
+            $schedule->command(PruneCommand::class, ['--model' => [ServerPlayer::class]])->daily();
+        }
+
+        // Separately prunes the join/leave history itself, on its own (longer) retention window
+        // — see config/players.php's session_prune_days and ServerPlayerSession::prunable().
+        if (config('players.session_prune_days')) {
+            $schedule->command(PruneCommand::class, ['--model' => [ServerPlayerSession::class]])->daily();
+        }
+
+        if (config('console_archive.prune_days')) {
+            $schedule->command(PruneCommand::class, ['--model' => [ServerConsoleArchive::class]])->daily();
+        }
+
+        // Poll Wings once a minute for current resource usage on every collectable server,
+        // then roll the raw samples up into hourly buckets and prune old rows on the
+        // schedules configured in config/resource-history.php.
+        $schedule->command(CollectResourceStatsCommand::class)->everyMinute()->withoutOverlapping();
+        $schedule->command(RollupResourceHistoryCommand::class)->hourly()->withoutOverlapping();
+
+        if (config('resource-history.raw_retention_days') || config('resource-history.rollup_retention_days')) {
+            $schedule->command(PruneCommand::class, [
+                '--model' => [ServerResourceSample::class, ServerResourceStatRollup::class],
+            ])->daily();
         }
 
         if (config('pterodactyl.telemetry.enabled')) {

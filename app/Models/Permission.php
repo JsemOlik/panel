@@ -65,6 +65,32 @@ class Permission extends Model
 
     public const ACTION_ACTIVITY_READ = 'activity.read';
 
+    // Read access to a server's captured console/chat archive (app/Models/ServerConsoleArchive.php).
+    // Deliberately its own permission rather than reusing ACTION_ACTIVITY_READ or
+    // ACTION_CONTROL_CONSOLE: this archive contains bulk, continuously-captured children's chat
+    // and should not be granted implicitly to whoever can already view the live console or the
+    // (much less sensitive) admin activity log.
+    public const ACTION_ARCHIVE_READ = 'archive.read';
+
+    /**
+     * Acting on an in-game player: messaging, kicking, banning. Deliberately separate from
+     * ACTION_PLAYERS_READ — seeing which children are online is supervision, removing one from
+     * the server is moderation, and plenty of staff should have the first without the second.
+     *
+     * It is also separate from ACTION_CONTROL_CONSOLE even though it ultimately sends console
+     * commands, because that permission grants EVERY command; this one grants exactly three,
+     * against a named player already known to the roster.
+     */
+    public const ACTION_PLAYERS_MODERATE = 'players.moderate';
+
+    // Read access to the derived player presence roster/history (app/Models/ServerPlayer.php,
+    // app/Models/ServerPlayerSession.php) — who is currently online and where, and their
+    // join/leave history. Deliberately its own permission, not folded into ACTION_ARCHIVE_READ:
+    // presence is derived metadata (a name, a status, timestamps), not the bulk captured chat text
+    // itself, so it is meaningfully less sensitive and staff who need "who's online" for basic
+    // supervision should not have to also be granted the raw console/chat archive to get it.
+    public const ACTION_PLAYERS_READ = 'players.read';
+
     /**
      * Should timestamps be used on this model.
      */
@@ -204,6 +230,21 @@ class Permission extends Model
             'description' => 'Permissions that control a user\'s access to the server activity logs.',
             'keys' => [
                 'read' => 'Allows a user to view the activity logs for the server.',
+            ],
+        ],
+
+        'archive' => [
+            'description' => 'Permissions that control a user\'s access to the server\'s captured console/chat archive. This is bulk, continuously captured console output (chat, for stock Minecraft/Paper/Bungee eggs) and is more sensitive than the live console or activity log — grant it narrowly.',
+            'keys' => [
+                'read' => 'Allows a user to search and view the captured console/chat archive for this server.',
+            ],
+        ],
+
+        'players' => [
+            'description' => 'Permissions that control a user\'s access to the derived player presence view for this server — who is currently online, and their join/leave history. Derived metadata only, not chat content; see the "archive" permission for that.',
+            'keys' => [
+                'read' => 'Allows a user to view the live player roster and join/leave history for this server.',
+                'moderate' => 'Allows a user to message, kick, or ban a player on this server. Separate from "read": seeing who is online is supervision, removing someone is moderation.',
             ],
         ],
     ];

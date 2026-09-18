@@ -53,6 +53,11 @@ return [
         'console' => [
             'command' => 'Executed ":command" on the server',
         ],
+        'player' => [
+            'message' => 'Sent ":command" to :player',
+            'kick' => 'Kicked :player from the server (":command")',
+            'ban' => 'Banned :player from the server (":command")',
+        ],
         'power' => [
             'start' => 'Started the server',
             'stop' => 'Stopped the server',

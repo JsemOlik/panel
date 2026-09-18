@@ -21,6 +21,16 @@ Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.ind
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 Route::post('/servers/power', Client\BulkPowerController::class)->name('api:client.servers.power');
 
+Route::prefix('/areas')->group(function () {
+    Route::get('/', [Client\Areas\AreaController::class, 'index'])->name('api:client.areas');
+    // Must be registered before the "/{area}" uuid-binding route below, or "wallboard" would be
+    // interpreted as an area's uuid and 404 as a missing model instead of reaching this action.
+    Route::get('/wallboard', [Client\Areas\AreaWallboardController::class, 'index'])->name('api:client.areas.wallboard');
+    Route::get('/{area}', [Client\Areas\AreaController::class, 'view'])->name('api:client.areas.view');
+    Route::post('/{area}/power', [Client\Areas\AreaPowerController::class, 'index'])->name('api:client.areas.power');
+    Route::post('/{area}/command', [Client\Areas\AreaCommandController::class, 'index'])->name('api:client.areas.command');
+});
+
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {
         Route::get('/', [Client\AccountController::class, 'index'])->name('api:client.account');
@@ -71,7 +81,15 @@ Route::group([
         ->get('/websocket', Client\Servers\WebsocketController::class)
         ->name('api:client:server.ws');
     Route::get('/resources', Client\Servers\ResourceUtilizationController::class)->name('api:client:server.resources');
+    Route::get('/resources/history', Client\Servers\ResourceHistoryController::class)->name('api:client:server.resources.history');
     Route::get('/activity', Client\Servers\ActivityLogController::class)->name('api:client:server.activity');
+    Route::get('/console-archive', Client\Servers\ConsoleArchiveController::class)->name('api:client:server.console-archive');
+
+    Route::group(['prefix' => '/players'], function () {
+        Route::get('/', [Client\Servers\PlayerController::class, 'index'])->name('api:client:server.players');
+        Route::get('/{player}/sessions', [Client\Servers\PlayerController::class, 'sessions'])->name('api:client:server.players.sessions');
+        Route::post('/{player}/action', [Client\Servers\PlayerController::class, 'action'])->name('api:client:server.players.action');
+    });
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);
     Route::post('/power', [Client\Servers\PowerController::class, 'index']);

@@ -13,6 +13,20 @@ interface Props {
     subuser: Subuser;
 }
 
+const formatExpiry = (expiresAt: Date): string => {
+    const diffMs = expiresAt.getTime() - Date.now();
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+
+    if (diffHours <= 0) {
+        return 'Expired';
+    }
+    if (diffHours < 24) {
+        return `Expires in ${diffHours}h`;
+    }
+
+    return `Expires ${expiresAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+};
+
 export default ({ subuser }: Props) => {
     const uuid = useStoreState((state) => state.user!.data!.uuid);
     const [visible, setVisible] = useState(false);
@@ -25,6 +39,20 @@ export default ({ subuser }: Props) => {
             </div>
             <div css={tw`ml-4 flex-1 overflow-hidden`}>
                 <p css={tw`text-sm truncate`}>{subuser.email}</p>
+                {subuser.expiresAt && (
+                    <p
+                        css={[
+                            tw`text-xs mt-1`,
+                            subuser.isExpired
+                                ? tw`text-red-400`
+                                : subuser.expiresAt.getTime() - Date.now() < 24 * 60 * 60 * 1000
+                                ? tw`text-yellow-400`
+                                : tw`text-neutral-400`,
+                        ]}
+                    >
+                        {subuser.isExpired ? 'Access expired' : formatExpiry(subuser.expiresAt)}
+                    </p>
+                )}
             </div>
             <div css={tw`ml-4`}>
                 <p css={tw`font-medium text-center`}>

@@ -6,6 +6,7 @@ use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Model;
+use Pterodactyl\Models\OAuthProvider;
 use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
@@ -76,9 +77,17 @@ class UserController extends Controller
      */
     public function view(User $user): View
     {
+        // Every configured provider is listed, not just the ones this user has linked, so the
+        // page answers "is this account reachable by SSO at all" rather than only showing what
+        // happens to exist. A provider with no identity row is the meaningful case when someone
+        // cannot sign in, and it is invisible if the view is driven off the identities alone.
+        $identities = $user->oauthIdentities()->get()->keyBy('provider_id');
+
         return view('admin.users.view', [
             'user' => $user,
             'languages' => $this->getAvailableLanguages(true),
+            'oauthProviders' => OAuthProvider::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'oauthIdentities' => $identities,
         ]);
     }
 

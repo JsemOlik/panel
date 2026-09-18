@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { Subuser } from '@/state/server/subusers';
-import { Form, Formik } from 'formik';
+import { Form, Formik, useFormikContext } from 'formik';
 import { array, object, string } from 'yup';
 import Field from '@/components/elements/Field';
 import { Actions, useStoreActions, useStoreState } from 'easy-peasy';
@@ -25,7 +25,71 @@ type Props = {
 interface Values {
     email: string;
     permissions: string[];
+    expiresAt: string;
 }
+
+// Converts a Date into the value a "datetime-local" input expects (local time,
+// no timezone/seconds suffix).
+const toDatetimeLocalValue = (date: Date): string => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(
+        date.getMinutes()
+    )}`;
+};
+
+const EXPIRY_PRESETS: { label: string; hours: number }[] = [
+    { label: '8 hours', hours: 8 },
+    { label: '1 day', hours: 24 },
+    { label: '3 days', hours: 72 },
+    { label: '7 days', hours: 168 },
+];
+
+// Renders the expiry field plus quick preset buttons that set it relative to now.
+// Split into its own component so it can reach the Formik context for setFieldValue.
+const ExpiresAtField = () => {
+    const { values, setFieldValue } = useFormikContext<Values>();
+
+    const applyPreset = (hours: number) => {
+        const date = new Date();
+        date.setHours(date.getHours() + hours);
+        setFieldValue('expiresAt', toDatetimeLocalValue(date));
+    };
+
+    return (
+        <div css={tw`mt-6`}>
+            <Field
+                type={'datetime-local'}
+                name={'expiresAt'}
+                label={'Access expires'}
+                description={
+                    'Leave blank for permanent access. Once this time passes the user immediately loses all access to this server.'
+                }
+            />
+            <div css={tw`mt-2 flex flex-wrap gap-2`}>
+                {EXPIRY_PRESETS.map(({ label, hours }) => (
+                    <button
+                        key={label}
+                        type={'button'}
+                        css={tw`text-xs px-2 py-1 rounded bg-neutral-700 text-neutral-200 hover:bg-neutral-600 transition-colors`}
+                        onClick={() => applyPreset(hours)}
+                    >
+                        {label}
+                    </button>
+                ))}
+                {values.expiresAt && (
+                    <button
+                        type={'button'}
+                        css={tw`text-xs px-2 py-1 rounded bg-neutral-700 text-neutral-200 hover:bg-neutral-600 transition-colors`}
+                        onClick={() => setFieldValue('expiresAt', '')}
+                    >
+                        Never
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const EditSubuserModal = ({ subuser }: Props) => {
     const ref = useRef<HTMLHeadingElement>(null);
@@ -62,7 +126,15 @@ const EditSubuserModal = ({ subuser }: Props) => {
         setPropOverrides({ showSpinnerOverlay: true });
         clearFlashes('user:edit');
 
-        createOrUpdateSubuser(uuid, values, subuser)
+        createOrUpdateSubuser(
+            uuid,
+            {
+                email: values.email,
+                permissions: values.permissions,
+                expiresAt: values.expiresAt ? new Date(values.expiresAt).toISOString() : null,
+            },
+            subuser
+        )
             .then((subuser) => {
                 appendSubuser(subuser);
                 dismiss();
@@ -92,6 +164,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 {
                     email: subuser?.email || '',
                     permissions: subuser?.permissions || [],
+                    expiresAt: subuser?.expiresAt && !subuser.isExpired ? toDatetimeLocalValue(subuser.expiresAt) : '',
                 } as Values
             }
             validationSchema={object().shape({
@@ -100,6 +173,11 @@ const EditSubuserModal = ({ subuser }: Props) => {
                     .email('A valid email address must be provided.')
                     .required('A valid email address must be provided.'),
                 permissions: array().of(string()),
+                expiresAt: string().test(
+                    'is-future',
+                    'The expiry date must be in the future.',
+                    (value) => !value || new Date(value).getTime() > Date.now()
+                ),
             })}
         >
             <Form>
@@ -135,6 +213,9 @@ const EditSubuserModal = ({ subuser }: Props) => {
                         />
                     </div>
                 )}
+                <Can action={subuser ? 'user.update' : 'user.create'}>
+                    <ExpiresAtField />
+                </Can>
                 <div css={tw`my-6`}>
                     {Object.keys(permissions)
                         .filter((key) => key !== 'websocket')

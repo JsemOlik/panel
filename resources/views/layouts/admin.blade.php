@@ -112,9 +112,19 @@
                                 <i class="fa fa-server"></i> <span>Servers</span>
                             </a>
                         </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.areas') ?: 'active' }}">
+                            <a href="{{ route('admin.areas') }}">
+                                <i class="fa fa-object-group"></i> <span>Areas</span>
+                            </a>
+                        </li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.users') ?: 'active' }}">
                             <a href="{{ route('admin.users') }}">
                                 <i class="fa fa-users"></i> <span>Users</span>
+                            </a>
+                        </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.keyword-alerts') ?: 'active' }}">
+                            <a href="{{ route('admin.keyword-alerts') }}">
+                                <i class="fa fa-bell"></i> <span>Keyword Alerts</span>
                             </a>
                         </li>
                         <li class="header">SERVICE MANAGEMENT</li>

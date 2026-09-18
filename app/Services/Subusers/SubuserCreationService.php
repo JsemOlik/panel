@@ -36,9 +36,9 @@ class SubuserCreationService
      * @throws UserIsServerOwnerException
      * @throws \Throwable
      */
-    public function handle(Server $server, string $email, array $permissions): Subuser
+    public function handle(Server $server, string $email, array $permissions, ?\Carbon\CarbonInterface $expiresAt = null): Subuser
     {
-        return $this->connection->transaction(function () use ($server, $email, $permissions) {
+        return $this->connection->transaction(function () use ($server, $email, $permissions, $expiresAt) {
             try {
                 $user = $this->userRepository->findFirstWhere([['email', '=', $email]]);
 
@@ -68,6 +68,7 @@ class SubuserCreationService
                 'user_id' => $user->id,
                 'server_id' => $server->id,
                 'permissions' => array_unique($permissions),
+                'expires_at' => $expiresAt,
             ]);
         });
     }

@@ -16,6 +16,7 @@ class UpdateSubuserRequest extends SubuserRequest
         return [
             'permissions' => 'required|array',
             'permissions.*' => 'string',
+            'expires_at' => 'nullable|date|after:now',
         ];
     }
 }

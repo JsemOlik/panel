@@ -11,7 +11,15 @@
     }
 
     & > .container {
-        @apply rounded-t-lg p-1 sm:p-2 bg-black min-h-[16rem] flex-1 font-mono text-sm;
+        /* Below `sm` the terminal is the reason staff opened this page, so it gets most of the
+           viewport instead of a fixed 16rem; desktop keeps the original fixed height. */
+        @apply rounded-t-lg p-1 sm:p-2 bg-black min-h-[50vh] sm:min-h-[16rem] flex-1 font-mono text-sm;
+
+        /* Short/landscape phone screens: give height back to the terminal rather than the rest
+           of the page, since 50vh of a ~400px-tall landscape viewport is too little to be useful. */
+        @media (orientation: landscape) and (max-height: 500px) {
+            min-height: 60vh;
+        }
 
         & #terminal {
             @apply h-full;
@@ -32,7 +40,9 @@
     }
 
     & .command_input {
-        @apply relative bg-[#030612] px-2 text-[#e6ecf2] placeholder:text-[#90a1b9] pl-10 pr-4 py-2 w-full font-mono text-sm sm:rounded-b-lg;
+        /* py-3 below `sm` keeps the input at a ~44px touch target; sm:py-2 restores the tighter
+           desktop sizing (mouse input doesn't need the extra height). */
+        @apply relative bg-[#030612] px-2 text-[#e6ecf2] placeholder:text-[#90a1b9] pl-10 pr-4 py-3 sm:py-2 w-full font-mono text-sm sm:rounded-b-lg;
         @apply focus:ring-0 outline-none focus-visible:outline-none;
         @apply border-0 border-b-2 border-transparent transition-colors duration-100;
         @apply active:border-cyan-500 focus:border-cyan-500;

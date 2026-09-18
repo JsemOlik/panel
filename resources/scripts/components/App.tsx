@@ -18,6 +18,11 @@ import Spinner from '@/components/elements/Spinner';
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
 const ServerRouter = lazy(() => import(/* webpackChunkName: "server" */ '@/routers/ServerRouter'));
 const AuthenticationRouter = lazy(() => import(/* webpackChunkName: "auth" */ '@/routers/AuthenticationRouter'));
+// Deliberately its own chunk, mounted outside AppLayout/DashboardSidebar below: the wallboard is
+// meant to fill an entire spare monitor/TV, not sit inside the normal dashboard chrome.
+const WallboardContainer = lazy(
+    () => import(/* webpackChunkName: "wallboard" */ '@/components/wallboard/WallboardContainer')
+);
 
 interface ExtendedWindow extends Window {
     SiteConfiguration?: SiteSettings;
@@ -73,6 +78,11 @@ const App = () => {
                                     <AuthenticationRouter />
                                 </Spinner.Suspense>
                             </Route>
+                            <AuthenticatedRoute path={'/wallboard'} exact>
+                                <Spinner.Suspense>
+                                    <WallboardContainer />
+                                </Spinner.Suspense>
+                            </AuthenticatedRoute>
                             <AuthenticatedRoute path={'/server/:id'}>
                                 <Spinner.Suspense>
                                     <ServerContext.Provider>
