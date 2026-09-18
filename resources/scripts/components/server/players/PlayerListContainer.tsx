@@ -14,6 +14,52 @@ const StatusDot = ({ online }: { online: boolean }) => (
     />
 );
 
+/**
+ * The player's Minecraft head, rendered from their username.
+ *
+ * This is the one thing on the page that leaves the network: the avatar service is asked for a
+ * head by username, so staff browsers disclose the usernames of children playing here to a third
+ * party. The names are already public on any server list, but if that is not acceptable the fix
+ * is to drop this component — nothing else depends on it.
+ *
+ * An offline player is dimmed rather than given a different image, and a name the service has no
+ * skin for simply falls back to the initial: a broken image icon next to a child's name reads as
+ * an error in the tool rather than an absent skin.
+ */
+const PlayerHead = ({ name, online }: { name: string; online: boolean }) => {
+    const [failed, setFailed] = useState(false);
+
+    // Reset when the row is reused for a different player, or a previously failed lookup would
+    // keep showing the initial for whoever lands in this slot next.
+    useEffect(() => setFailed(false), [name]);
+
+    if (failed) {
+        return (
+            <span
+                className={`inline-flex items-center justify-center h-8 w-8 mr-3 shrink-0 rounded bg-neutral-700 text-xs font-medium text-neutral-300 ${
+                    online ? '' : 'opacity-50'
+                }`}
+                aria-hidden
+            >
+                {name.slice(0, 1).toUpperCase()}
+            </span>
+        );
+    }
+
+    return (
+        <img
+            src={`https://mc-heads.net/avatar/${encodeURIComponent(name)}/64`}
+            alt={''}
+            aria-hidden
+            loading={'lazy'}
+            onError={() => setFailed(true)}
+            className={`h-8 w-8 mr-3 shrink-0 rounded ${online ? '' : 'opacity-50'}`}
+            // Heads are 8x8 pixel art upscaled; smoothing them turns the face to mush.
+            style={{ imageRendering: 'pixelated' }}
+        />
+    );
+};
+
 const PlayerSessionHistory = ({ player }: { player: string }) => {
     const { data, isValidating } = useServerPlayerSessions(player, 1, { revalidateOnMount: true });
 
@@ -50,6 +96,7 @@ const PlayerRow = ({ player }: { player: ServerPlayer }) => {
                 className={'flex items-center w-full text-left'}
                 onClick={() => setExpanded((value) => !value)}
             >
+                <PlayerHead name={player.name} online={online} />
                 <StatusDot online={online} />
                 <span className={'text-neutral-200 font-medium'}>{player.name}</span>
                 <span className={'ml-auto text-xs text-neutral-500'}>
