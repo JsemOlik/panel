@@ -61,19 +61,23 @@ It works from any directory.
 
 1. In the Panel, create a location and a node with FQDN `wings.pterodactyl.test`, set it as
    **Behind Proxy**, and set the **Daemon Port** to `443`.
-2. Copy the node's configuration to `dev/code/wings/config.yml`, then change:
-   * `api.port` to `8080` (Traefik proxies 443 to Wings on 8080).
-   * Add the following under `system:` so the paths exist on the host Docker daemon too
-     (Wings starts servers using the host's Docker, so every path it mounts must be the same
-     inside the Wings container and on the host):
+2. Copy the node's configuration to `dev/code/wings/config.yml`, then:
+   * Change `api.port` to `8080` (Traefik proxies 443 to Wings on 8080).
+   * Replace every `/var/lib/pterodactyl` with `/var/lib/docker/volumes/pterodactyl-data/_data`, and
+     add the following under `system:`:
      ```yaml
      machine_id:
        enabled: true
-       directory: /var/lib/pterodactyl/machine-id
+       directory: /var/lib/docker/volumes/pterodactyl-data/_data/machine-id
      passwd:
        enabled: false
-       directory: /var/lib/pterodactyl/etc
+       directory: /var/lib/docker/volumes/pterodactyl-data/_data/etc
      ```
+     Wings creates server containers through the host's Docker, so every path it mounts must be
+     the same inside the Wings container and on the Docker host. This is the path of the
+     `pterodactyl-data` volume, which persists across restarts. Other paths such as
+     `/var/lib/pterodactyl` live inside the OrbStack/Docker Desktop VM and are wiped whenever it
+     restarts, taking your servers' files with them.
 3. Run `./dev/beak wings` and then `make debug` inside the container.
 
 ### Services

@@ -58,7 +58,10 @@ services:
       - ./docker/certificates/root_ca.pem:/usr/local/share/ca-certificates/mkcert-root.crt:ro
       - go_modules:/root/go
       - /tmp/pterodactyl:/tmp/pterodactyl
-      - /var/lib/pterodactyl:/var/lib/pterodactyl
+      # Wings creates server containers through the host's Docker, so its data must live at the
+      # same path inside this container and on the Docker host. Using the named volume's own path
+      # keeps it persistent; Docker Desktop and OrbStack wipe other paths in their VM on restart.
+      - pterodactyl:/var/lib/docker/volumes/pterodactyl-data/_data
       - /var/run/docker.sock:/var/run/docker.sock:ro
     cap_add:
       - SYS_ADMIN
@@ -125,4 +128,7 @@ volumes:
   minio:
     driver: local
   go_modules:
+    driver: local
+  pterodactyl:
+    name: pterodactyl-data
     driver: local
