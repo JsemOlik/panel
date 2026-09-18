@@ -122,6 +122,11 @@
                                 <i class="fa fa-users"></i> <span>Users</span>
                             </a>
                         </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.keyword-alerts') ?: 'active' }}">
+                            <a href="{{ route('admin.keyword-alerts') }}">
+                                <i class="fa fa-bell"></i> <span>Keyword Alerts</span>
+                            </a>
+                        </li>
                         <li class="header">SERVICE MANAGEMENT</li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.mounts') ?: 'active' }}">
                             <a href="{{ route('admin.mounts') }}">

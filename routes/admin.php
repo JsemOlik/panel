@@ -277,3 +277,23 @@ Route::group(['prefix' => 'areas'], function () {
     Route::delete('/view/{area:id}/servers/{pivot}', [Admin\AreaServerController::class, 'destroy'])->withoutScopedBindings()->name('admin.areas.view.servers.delete');
     Route::delete('/view/{area:id}/staff/{user}', [Admin\AreaUserController::class, 'destroy'])->withoutScopedBindings()->name('admin.areas.view.staff');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Keyword Alert Controller Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/keyword-alerts
+|
+*/
+Route::group(['prefix' => 'keyword-alerts'], function () {
+    Route::get('/', [Admin\Alerts\KeywordAlertController::class, 'index'])->name('admin.keyword-alerts');
+    Route::get('/rules', [Admin\Alerts\KeywordAlertRuleController::class, 'index'])->name('admin.keyword-alerts.rules');
+
+    Route::post('/rules', [Admin\Alerts\KeywordAlertRuleController::class, 'store']);
+    Route::post('/{alert:id}/resolve', [Admin\Alerts\KeywordAlertController::class, 'resolve'])->name('admin.keyword-alerts.resolve');
+
+    Route::patch('/rules/{rule:id}', [Admin\Alerts\KeywordAlertRuleController::class, 'update'])->name('admin.keyword-alerts.rules.edit');
+
+    Route::delete('/rules/{rule:id}', [Admin\Alerts\KeywordAlertRuleController::class, 'destroy']);
+});
