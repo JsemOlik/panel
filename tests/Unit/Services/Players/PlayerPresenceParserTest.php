@@ -105,4 +105,40 @@ class PlayerPresenceParserTest extends TestCase
         $this->assertNull(PlayerPresenceParser::parse('', false));
         $this->assertNull(PlayerPresenceParser::parse('[12:34:56 INFO]: ', false));
     }
+
+    /**
+     * Newer Paper builds route the join/leave broadcast through the system-chat path, so the line
+     * reads "System chat: Steve joined the game". These were observed on a real server in this
+     * fork's own dev environment and matched nothing: the join was rescued by the entity-id
+     * signal, but the leave had no second signal at all, so players stayed online forever.
+     */
+    public function testSystemChatPrefixedBroadcastsAreDetected(): void
+    {
+        $join = PlayerPresenceParser::parse('[10:32:14 INFO]: System chat: JsemOlik joined the game', false);
+        $this->assertSame(['event' => 'join', 'player' => 'JsemOlik'], $join);
+
+        $leave = PlayerPresenceParser::parse('[10:40:00 INFO]: System chat: JsemOlik left the game', false);
+        $this->assertSame(['event' => 'leave', 'player' => 'JsemOlik'], $leave);
+    }
+
+    /**
+     * The leave-side counterpart to the entity-id join signal: emitted on the network thread
+     * regardless of how the chat broadcast is decorated or whether it is suppressed.
+     */
+    public function testLostConnectionIsDetectedAsALeave(): void
+    {
+        $result = PlayerPresenceParser::parse('[10:40:00 INFO]: JsemOlik lost connection: Disconnected', false);
+
+        $this->assertSame(['event' => 'leave', 'player' => 'JsemOlik'], $result);
+    }
+
+    /**
+     * Stripping the system-chat prefix must not turn ordinary chat into a presence event — a child
+     * typing "joined the game" should never register as a join.
+     */
+    public function testSystemChatPrefixedPlayerChatIsStillIgnored(): void
+    {
+        $this->assertNull(PlayerPresenceParser::parse('[10:40:00 INFO]: System chat: <JsemOlik> hello there', false));
+        $this->assertNull(PlayerPresenceParser::parse('[10:40:00 INFO]: System chat: <JsemOlik> joined the game', false));
+    }
 }

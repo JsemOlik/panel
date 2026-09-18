@@ -61,6 +61,22 @@ final class PlayerPresenceParser
     private const BACKEND_LEAVE_BROADCAST = '/^([A-Za-z0-9_]{1,16}) left the game$/';
 
     /**
+     * Vanilla/Paper/Spigot: the network-thread disconnect line, emitted whether or not the "left
+     * the game" broadcast is visible. This is the leave-side counterpart to BACKEND_JOIN_ENTITY
+     * and exists for the same reason — without it, a build that decorates or suppresses the chat
+     * broadcast produces joins (which BACKEND_JOIN_ENTITY still catches) but never leaves, and
+     * every player is left showing online forever.
+     */
+    private const BACKEND_LEAVE_DISCONNECT = '/^([A-Za-z0-9_]{1,16}) lost connection:/';
+
+    /**
+     * Newer Paper builds log the join/leave broadcast through the system-chat path, which prefixes
+     * the message with a literal "System chat: ". Stripped before matching so the broadcast
+     * patterns work on both shapes rather than only the older one.
+     */
+    private const BACKEND_SYSTEM_CHAT_PREFIX = '/^System chat:\s*/';
+
+    /**
      * BungeeCord/Waterfall: proxy-level connect/disconnect, logged by UserConnection as
      * `[<name>] has connected` / `[<name>] has disconnected`. Anchored at both ends deliberately:
      * a per-backend server switch is logged as `[<name>] -> <ServerName> has connected` /
@@ -94,13 +110,17 @@ final class PlayerPresenceParser
      */
     private static function parseBackendLine(string $remainder): ?array
     {
+        $remainder = preg_replace(self::BACKEND_SYSTEM_CHAT_PREFIX, '', $remainder, 1) ?? $remainder;
+
         if (preg_match(self::BACKEND_JOIN_BROADCAST, $remainder, $matches) === 1
             || preg_match(self::BACKEND_JOIN_ENTITY, $remainder, $matches) === 1
         ) {
             return ['event' => self::EVENT_JOIN, 'player' => $matches[1]];
         }
 
-        if (preg_match(self::BACKEND_LEAVE_BROADCAST, $remainder, $matches) === 1) {
+        if (preg_match(self::BACKEND_LEAVE_BROADCAST, $remainder, $matches) === 1
+            || preg_match(self::BACKEND_LEAVE_DISCONNECT, $remainder, $matches) === 1
+        ) {
             return ['event' => self::EVENT_LEAVE, 'player' => $matches[1]];
         }
 
