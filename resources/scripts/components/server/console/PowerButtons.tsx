@@ -50,7 +50,7 @@ export default ({ className }: PowerButtonProps) => {
             </Dialog.Confirm>
             <Can action={'control.start'}>
                 <Button
-                    className={'flex-1'}
+                    className={'flex-1 h-11 sm:h-9 text-base sm:text-sm'}
                     disabled={status !== 'offline'}
                     onClick={onButtonClick.bind(this, 'start')}
                 >
@@ -60,7 +60,7 @@ export default ({ className }: PowerButtonProps) => {
             <Can action={'control.restart'}>
                 <Button
                     variant={'secondary'}
-                    className={'flex-1'}
+                    className={'flex-1 h-11 sm:h-9 text-base sm:text-sm'}
                     disabled={!status}
                     onClick={onButtonClick.bind(this, 'restart')}
                 >
@@ -70,7 +70,7 @@ export default ({ className }: PowerButtonProps) => {
             <Can action={'control.stop'}>
                 <Button
                     variant={'destructive'}
-                    className={'flex-1'}
+                    className={'flex-1 h-11 sm:h-9 text-base sm:text-sm'}
                     disabled={status === 'offline'}
                     onClick={onButtonClick.bind(this, killable ? 'kill' : 'stop')}
                 >

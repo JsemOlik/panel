@@ -42,11 +42,17 @@ const theme = {
     selection: '#FAF089',
 };
 
+// Slightly larger on phones/tablets — readability matters more than line-count when the
+// terminal is being read at arm's length rather than from a desk. This is read once at module
+// load (the viewport size when the page first opens); xterm options aren't reactive to Tailwind
+// breakpoints, and FitAddon already re-flows columns/rows on resize/rotation independent of this.
+const isSmallViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
 const terminalProps: ITerminalOptions = {
     disableStdin: true,
     cursorStyle: 'underline',
     allowTransparency: true,
-    fontSize: 12,
+    fontSize: isSmallViewport ? 14 : 12,
     fontFamily: th('fontFamily.mono'),
     rows: 30,
     theme: theme,
@@ -219,8 +225,16 @@ export default () => {
                         aria-label={'Console command input.'}
                         disabled={!instance || !connected}
                         onKeyDown={handleCommandKeyDown}
+                        // Keep the input above the on-screen keyboard on phones/tablets where the
+                        // visual viewport shrinks unpredictably (notably iOS Safari).
+                        onFocus={(e) => e.currentTarget.scrollIntoView({ block: 'center' })}
                         autoCorrect={'off'}
                         autoCapitalize={'none'}
+                        inputMode={'text'}
+                        // Not yet in this fork's @types/react (React 16), so it's passed through a
+                        // spread rather than a typed prop — the browser reads it regardless, it just
+                        // makes the mobile keyboard's return key read "Send" instead of a checkmark.
+                        {...{ enterKeyHint: 'send' }}
                     />
                     <div
                         className={classNames(

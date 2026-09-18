@@ -63,6 +63,7 @@ const ArgumentsDialog = ({ shortcut, onClose, onSend }: ArgumentsDialogProps) =>
                                 </Label>
                                 <Input
                                     id={id}
+                                    className={'h-11 sm:h-9'}
                                     autoFocus={index === 0}
                                     placeholder={arg.placeholder || undefined}
                                     value={values[arg.key] ?? ''}
@@ -86,10 +87,10 @@ const ArgumentsDialog = ({ shortcut, onClose, onSend }: ArgumentsDialogProps) =>
                 </form>
             )}
             <Dialog.Footer>
-                <Button variant={'secondary'} onClick={onClose}>
+                <Button variant={'secondary'} onClick={onClose} className={'h-11 sm:h-9'}>
                     Cancel
                 </Button>
-                <Button type={'submit'} form={'console-shortcut-form'}>
+                <Button type={'submit'} form={'console-shortcut-form'} className={'h-11 sm:h-9'}>
                     Send
                 </Button>
             </Dialog.Footer>
@@ -125,7 +126,7 @@ export default ({ className }: { className?: string }) => {
 
     return (
         <Can action={'control.console'}>
-            <div className={cn('flex flex-wrap gap-2', className)}>
+            <div className={cn('flex flex-wrap gap-3 sm:gap-2', className)}>
                 {shortcuts.map((shortcut) => (
                     <Tooltip
                         key={shortcut.id}
@@ -137,7 +138,12 @@ export default ({ className }: { className?: string }) => {
                     >
                         {/* Disabled buttons don't fire mouse events, so the wrapper keeps the tooltip working. */}
                         <span className={'inline-flex'}>
-                            <Button variant={'secondary'} disabled={unavailable} onClick={() => onClick(shortcut)}>
+                            <Button
+                                variant={'secondary'}
+                                disabled={unavailable}
+                                onClick={() => onClick(shortcut)}
+                                className={'h-11 sm:h-9 px-4 sm:px-3 text-base sm:text-sm'}
+                            >
                                 {shortcut.name}
                                 {shortcut.arguments.length > 0 && <span className={'text-neutral-400'}>…</span>}
                             </Button>
@@ -145,6 +151,11 @@ export default ({ className }: { className?: string }) => {
                     </Tooltip>
                 ))}
             </div>
+            {/* The tooltip above never fires on touch (it's hover/focus-only, and disabled buttons
+                don't receive either), so touch users get a plain, always-visible explanation instead. */}
+            {unavailable && (
+                <p className={'mt-2 text-xs text-neutral-400 sm:hidden'}>Server must be running to use shortcuts.</p>
+            )}
             <ArgumentsDialog key={dialogKey} shortcut={active} onClose={() => setActive(null)} onSend={send} />
         </Can>
     );
