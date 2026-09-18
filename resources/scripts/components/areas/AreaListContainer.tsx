@@ -22,7 +22,7 @@ const AreaRow = ({ area, className }: { area: Area; className?: string }) => {
     const proxy = area.members.find((member) => member.role === 'proxy');
 
     return (
-        <AreaRowBox as={Link} to={`/areas/${area.id}`} className={className}>
+        <AreaRowBox as={Link} to={`/areas/${area.uuid}`} className={className}>
             <div css={tw`flex items-center col-span-12 sm:col-span-8`}>
                 <div className={'icon mr-4'}>
                     <FontAwesomeIcon icon={faLayerGroup} />

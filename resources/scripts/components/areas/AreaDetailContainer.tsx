@@ -119,10 +119,13 @@ const MemberRow = ({ member, className }: { member: AreaMember; className?: stri
 };
 
 export default () => {
-    const { id } = useParams<{ id: string }>();
+    // Areas are addressed by uuid in the client API: Pterodactyl's base model returns 'uuid'
+    // from getRouteKeyName(), and the /api/client/areas routes don't override it to ':id' the way
+    // the admin routes do. Passing a numeric id here resolves to no model at all.
+    const { uuid } = useParams<{ uuid: string }>();
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
-    const { data: area, error, mutate } = useSWR<Area>(`/api/client/areas/${id}`, () => getArea(id));
+    const { data: area, error, mutate } = useSWR<Area>(`/api/client/areas/${uuid}`, () => getArea(uuid));
 
     useEffect(() => {
         if (error) clearAndAddHttpError({ key: 'area', error });
@@ -148,7 +151,7 @@ export default () => {
                 {!!area.description && <p css={tw`mt-1 text-sm text-neutral-400`}>{area.description}</p>}
             </div>
             <div css={tw`mb-4`}>
-                <AreaPowerActions areaId={area.id} onCompleted={onActionCompleted} />
+                <AreaPowerActions areaId={area.uuid} onCompleted={onActionCompleted} />
             </div>
             {area.members.length > 0 ? (
                 <div>

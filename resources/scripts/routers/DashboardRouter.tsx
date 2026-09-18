@@ -26,7 +26,7 @@ export default () => {
                         <Route path={'/areas'} exact>
                             <AreaListContainer />
                         </Route>
-                        <Route path={'/areas/:id'} exact>
+                        <Route path={'/areas/:uuid'} exact>
                             <AreaDetailContainer />
                         </Route>
                         <Route path={'/account'}>
