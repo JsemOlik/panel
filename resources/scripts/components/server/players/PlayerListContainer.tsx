@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { mutate } from 'swr';
 import { useServerPlayers } from '@/api/server/players/getServerPlayers';
 import { useServerPlayerSessions } from '@/api/server/players/getServerPlayerSessions';
 import sendPlayerAction, { PlayerAction } from '@/api/server/players/sendPlayerAction';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import { useFlashKey } from '@/plugins/useFlash';
+import { useServerSWRKey } from '@/plugins/useSWRKey';
+import { Actions, useStoreActions } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import Spinner from '@/components/elements/Spinner';
 import Can from '@/components/elements/Can';
@@ -98,7 +102,18 @@ const PlayerSessionHistory = ({ player }: { player: string }) => {
  */
 const ACTION_COPY: Record<
     PlayerAction,
-    { title: string; label: string; confirm: string; required: boolean; destructive: boolean; help: string }
+    {
+        title: string;
+        label: string;
+        confirm: string;
+        required: boolean;
+        destructive: boolean;
+        help: string;
+        // Shown after a 204 from Wings. A 204 only means the daemon accepted the command string,
+        // not that it did anything in-game, so this must never claim more than "sent" -- staff
+        // still have to look at the server to know a kick or ban actually landed.
+        success: (player: string) => string;
+    }
 > = {
     message: {
         title: 'Send a private message',
@@ -107,6 +122,7 @@ const ACTION_COPY: Record<
         required: true,
         destructive: false,
         help: 'Sent with /tell, so only this player sees it.',
+        success: (player) => `Message sent to ${player}.`,
     },
     kick: {
         title: 'Kick from the server',
@@ -115,6 +131,7 @@ const ACTION_COPY: Record<
         required: false,
         destructive: true,
         help: 'Disconnects the player. They can rejoin immediately. The reason is shown to them.',
+        success: (player) => `Kick command sent for ${player}. Confirm in-game that it took effect.`,
     },
     ban: {
         title: 'Ban from the server',
@@ -123,6 +140,7 @@ const ACTION_COPY: Record<
         required: false,
         destructive: true,
         help: 'Adds the player to the server ban list. Undo this in-game with /pardon.',
+        success: (player) => `Ban command sent for ${player}. Confirm in-game that it took effect.`,
     },
 };
 
@@ -144,27 +162,74 @@ const PlayerActionDialog = ({
 }) => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { clearFlashes, clearAndAddHttpError } = useFlashKey(`server:players:${player}`);
+    // Success feedback belongs on the list itself (via `server:players`), not the per-dialog key
+    // above -- the dialog is about to close, so a flash scoped to it would never be seen.
+    const { addFlash } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
+    const playersKey = useServerSWRKey(['players', {}]);
     const [text, setText] = useState('');
+    // Only used for the ban confirmation step below; see the name-match requirement in `submit`.
+    const [confirmName, setConfirmName] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    // This component is always rendered by the row (it just returns null while there is no
+    // action), so it never actually unmounts today -- but nothing guarantees that stays true, and
+    // guarding here costs nothing.
+    const mountedRef = useRef(true);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
+
     // Never carry the previous action's text into the next dialog — a kick reason sent as a
-    // private message would be an unpleasant surprise.
-    useEffect(() => setText(''), [action, player]);
+    // private message would be an unpleasant surprise. Flashes are stored in a global,
+    // string-keyed store that survives this component's open/close cycles, so an error from a
+    // previous attempt has to be cleared here too or it would still be showing next time this
+    // player's dialog is reopened.
+    useEffect(() => {
+        setText('');
+        setConfirmName('');
+        clearFlashes();
+    }, [action, player]);
 
     if (action === null) {
         return null;
     }
 
     const copy = ACTION_COPY[action];
+    // The roster re-sorts online-first on every 5s poll, so a row a moderator lined up a click on
+    // can shift under the cursor before the click lands. For a ban specifically -- the one action
+    // here with a real, lasting consequence for a real person -- the dialog showing the player's
+    // name is not enough to catch that: typing a reason (or nothing at all) doesn't require
+    // reading it. Requiring the name to be typed out forces it to be read and registered, and as a
+    // side effect nothing can be pre-filled by a stray keypress or paste.
+    const nameConfirmed = action !== 'ban' || confirmName.trim() === player;
+    // A misclick landing on Ban is still just one open dialog, not a banned player, as long as
+    // Enter can't drive it home from there. Kick and ban both keep their confirm button behind an
+    // explicit click; only the non-destructive message action gets the Enter-to-send convenience.
+    const fieldId = `player-action-text-${player}-${action}`;
+    const confirmFieldId = `player-action-confirm-${player}-${action}`;
 
     const submit = () => {
         setSubmitting(true);
         clearFlashes();
 
         sendPlayerAction(uuid, player, action, text.trim() || undefined)
-            .then(() => onClose())
-            .catch((error) => clearAndAddHttpError(error))
-            .then(() => setSubmitting(false));
+            .then(() => {
+                // A 204 only means Wings accepted the command string; revalidate so a successful
+                // kick visibly moves the player to offline instead of waiting up to 5s for the
+                // next poll, and say only that much in the flash.
+                mutate(playersKey);
+                addFlash({ key: 'server:players', type: 'success', message: copy.success(player) });
+                onClose();
+            })
+            .catch((error) => {
+                if (mountedRef.current) clearAndAddHttpError(error);
+            })
+            .finally(() => {
+                if (mountedRef.current) setSubmitting(false);
+            });
     };
 
     return (
@@ -172,32 +237,49 @@ const PlayerActionDialog = ({
             {copy.destructive && <Dialog.Icon type={'danger'} position={'container'} />}
             <FlashMessageRender byKey={`server:players:${player}`} className={'mb-4'} />
             <p className={'text-sm text-neutral-400 mb-3'}>{copy.help}</p>
-            <label
-                className={'block text-xs uppercase tracking-wide text-neutral-400 mb-1'}
-                htmlFor={'player-action-text'}
-            >
+            <label className={'block text-xs uppercase tracking-wide text-neutral-400 mb-1'} htmlFor={fieldId}>
                 {copy.label}
             </label>
             <Input
-                id={'player-action-text'}
+                id={fieldId}
                 autoFocus
                 value={text}
                 maxLength={256}
                 disabled={submitting}
                 onChange={(e) => setText(e.currentTarget.value)}
                 onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !(copy.required && text.trim().length === 0)) {
+                    // Destructive actions are confirmed by clicking the (also disabled-until-ready)
+                    // button below, never by Enter -- that is what turns "Ban" then a stray Enter
+                    // into an instant ban.
+                    if (e.key === 'Enter' && !copy.destructive && !(copy.required && text.trim().length === 0)) {
                         submit();
                     }
                 }}
             />
+            {action === 'ban' && (
+                <div className={'mt-3'}>
+                    <label
+                        className={'block text-xs uppercase tracking-wide text-neutral-400 mb-1'}
+                        htmlFor={confirmFieldId}
+                    >
+                        Type &ldquo;{player}&rdquo; to confirm
+                    </label>
+                    <Input
+                        id={confirmFieldId}
+                        value={confirmName}
+                        maxLength={256}
+                        disabled={submitting}
+                        onChange={(e) => setConfirmName(e.currentTarget.value)}
+                    />
+                </div>
+            )}
             <Dialog.Footer>
                 <Button variant={'secondary'} disabled={submitting} onClick={onClose}>
                     Cancel
                 </Button>
                 <Button
                     variant={copy.destructive ? 'destructive' : 'default'}
-                    disabled={submitting || (copy.required && text.trim().length === 0)}
+                    disabled={submitting || (copy.required && text.trim().length === 0) || !nameConfirmed}
                     onClick={submit}
                 >
                     {copy.confirm}
