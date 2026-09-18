@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+cd /var/www/html || exit 1
+
+if [ ! -f ".env" ]; then
+  cp .env.example .env
+
+  # Point a fresh environment file at the services in the development environment.
+  sed -i "s#^APP_URL=.*#APP_URL=https://pterodactyl.test#" .env
+  sed -i "s/^DB_HOST=.*/DB_HOST=mysql/" .env
+  sed -i "s/^DB_DATABASE=.*/DB_DATABASE=pterodactyl/" .env
+  sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=password/" .env
+  sed -i "s/^REDIS_HOST=.*/REDIS_HOST=redis/" .env
+fi
+
+sed -i "s/APP_ENV=.*/APP_ENV=local/" .env
+sed -i "s/APP_DEBUG=.*/APP_DEBUG=true/" .env
+
+composer install --no-interaction --prefer-dist --no-scripts --no-progress
+php artisan config:clear
+
+if ! grep -q "^APP_KEY=.\+" .env; then
+  php artisan key:generate --force
+fi
+
+php artisan migrate --seed --force
+
+yarn install --no-progress
+
+sudo chown -R pterodactyl:www-data storage bootstrap/cache
+sudo find storage bootstrap/cache ! -name '*.gitignore' -exec chmod 755 {} +
+
+sudo service cron restart
+sudo killall php-fpm8.2 php nginx 2>/dev/null || true
