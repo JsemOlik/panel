@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { CheckIcon, DesktopComputerIcon, MoonIcon, SunIcon } from '@heroicons/react/outline';
+import {
+    CheckIcon,
+    DesktopComputerIcon,
+    ExternalLinkIcon,
+    MoonIcon,
+    SunIcon,
+    UsersIcon,
+} from '@heroicons/react/outline';
 import PageContentBlock from '@/components/elements/PageContentBlock';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { primaryColors } from '@/primaryColors';
 import { getPrimaryColor, setPrimaryColor } from '@/lib/primaryColor';
 import { setThemePreference, ThemePreference, useTheme } from '@/lib/theme';
@@ -11,6 +20,71 @@ const themes: { id: ThemePreference; name: string; icon: typeof SunIcon }[] = [
     { id: 'dark', name: 'Dark', icon: MoonIcon },
     { id: 'system', name: 'System', icon: DesktopComputerIcon },
 ];
+
+// A few of the elements that follow the primary color, so a color can be judged before leaving
+// this page. Nothing here is saved anywhere, it only reacts to being clicked.
+const ElementPreview = () => {
+    const [enabled, setEnabled] = useState(true);
+    const [checked, setChecked] = useState(true);
+
+    return (
+        <div className={'mt-4 space-y-4 rounded-xl border border-neutral-600 bg-neutral-700 p-4'}>
+            <div className={'flex flex-wrap items-center gap-3'}>
+                <Button>Save changes</Button>
+                <Button variant={'secondary'}>Cancel</Button>
+                <span className={'rounded-full bg-primary-500 px-2.5 py-1 text-xs font-semibold text-white'}>
+                    Primary
+                </span>
+                <span className={'rounded-full bg-neutral-600 px-2.5 py-1 text-xs font-semibold text-neutral-200'}>
+                    Secondary
+                </span>
+            </div>
+            <div
+                className={
+                    'flex items-center gap-2 rounded-lg bg-primary-500/20 px-3 py-2.5 text-sm font-medium text-neutral-50'
+                }
+            >
+                <UsersIcon className={'h-5 w-5 text-primary-400'} aria-hidden={'true'} />
+                Selected menu item
+            </div>
+            <div className={'flex flex-wrap items-center gap-x-6 gap-y-3'}>
+                <div className={'flex items-center gap-3'}>
+                    <Switch
+                        id={'appearance_preview_switch'}
+                        checked={enabled}
+                        onCheckedChange={setEnabled}
+                        aria-label={'Switch'}
+                    />
+                    <span className={'text-sm text-neutral-100'}>Switch</span>
+                </div>
+                <div className={'flex items-center gap-3'}>
+                    <button
+                        type={'button'}
+                        role={'checkbox'}
+                        aria-checked={checked}
+                        aria-label={'Checkbox'}
+                        onClick={() => setChecked((value) => !value)}
+                        className={cn(
+                            'flex h-5 w-5 items-center justify-center rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-700',
+                            checked
+                                ? 'border-primary-500 bg-primary-500 text-white'
+                                : 'border-neutral-500 bg-neutral-800'
+                        )}
+                    >
+                        {checked && <CheckIcon className={'h-3.5 w-3.5'} aria-hidden={'true'} strokeWidth={3} />}
+                    </button>
+                    <span className={'text-sm text-neutral-100'}>Checkbox</span>
+                </div>
+                <span
+                    className={'inline-flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:underline'}
+                >
+                    Link to a detail
+                    <ExternalLinkIcon className={'h-4 w-4'} aria-hidden={'true'} />
+                </span>
+            </div>
+        </div>
+    );
+};
 
 export default () => {
     const [selected, setSelected] = useState(getPrimaryColor);
@@ -91,6 +165,13 @@ export default () => {
                         );
                     })}
                 </div>
+            </div>
+            <div className={'mt-10'}>
+                <h3 className={'text-base font-semibold text-neutral-50'}>Preview</h3>
+                <p className={'mt-1 text-sm text-neutral-400'}>
+                    How the elements of the Panel look with the selected theme and color.
+                </p>
+                <ElementPreview />
             </div>
         </PageContentBlock>
     );
