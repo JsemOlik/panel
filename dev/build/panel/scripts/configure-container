@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -o pipefail
+
+if [ -n "$WWWUSER" ]; then
+    usermod -u "$WWWUSER" pterodactyl || exit 1
+fi
+
+cd /var/www/html || exit 1
+
+mkdir -p /usr/local/share/ca-certificates/mkcert
+if [ -d "/etc/certs" ]; then
+  ln -sf /etc/certs/* /usr/local/share/ca-certificates/mkcert
+  update-ca-certificates
+fi
+
+find storage bootstrap/cache -type d -exec chmod 755 {} +
+find storage bootstrap/cache ! -name '*.gitignore' -type f -exec chmod 644 {} +

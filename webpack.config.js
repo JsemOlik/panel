@@ -148,9 +148,9 @@ module.exports = {
             type: 'https',
             options: process.env.USE_LOCAL_CERTS
                 ? {
-                      ca: path.join(__dirname, '../../docker/certificates/root_ca.pem'),
-                      cert: path.join(__dirname, '../../docker/certificates/pterodactyl.test.pem'),
-                      key: path.join(__dirname, '../../docker/certificates/pterodactyl.test-key.pem'),
+                      ca: path.join(__dirname, 'dev/docker/certificates/root_ca.pem'),
+                      cert: path.join(__dirname, 'dev/docker/certificates/pterodactyl.test.pem'),
+                      key: path.join(__dirname, 'dev/docker/certificates/pterodactyl.test-key.pem'),
                   }
                 : undefined,
         },

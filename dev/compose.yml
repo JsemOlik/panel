@@ -1,0 +1,128 @@
+# Keeps the same project name as the standalone pterodactyl/development repo so
+# existing database and MinIO volumes carry over.
+name: panel-development
+
+services:
+  traefik:
+    image: traefik:v2.11
+    restart: unless-stopped
+    command: --configFile=/etc/traefik/traefik.yml
+    networks:
+      traefik:
+        aliases:
+          - pterodactyl.test
+          - wings.pterodactyl.test
+          - s3.minio.pterodactyl.test
+    ports:
+      - "443:443"
+      - "8080:8080"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./traefik:/etc/traefik:ro
+      - ./docker/certificates:/etc/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+  app:
+    build:
+      dockerfile: ./build/panel/Dockerfile
+    stop_grace_period: '1s'
+    networks:
+      - traefik
+      - pterodactyl
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - ..:/var/www/html
+      - ./docker/certificates:/etc/certs:ro
+      - ./docker/php:/etc/php/mods-available:ro
+    environment:
+      TZ: ${TZ:-UTC}
+      WWWUSER: ${WWWUSER:-$$(id -u)}
+      WWWGROUP: ${WWWGROUP:-$$(id -g)}
+  wings:
+    build:
+      dockerfile: ./build/wings/Dockerfile
+    stop_grace_period: '1s'
+    tty: true
+    stdin_open: true
+    # Trust the mkcert CA so Wings can reach https://pterodactyl.test.
+    command: bash -c "update-ca-certificates >/dev/null && exec bash"
+    networks:
+      - traefik
+      - pterodactyl
+    ports:
+      - "2022:2022"
+    volumes:
+      - ./code/wings:/home/root/wings
+      - ./docker/certificates/root_ca.pem:/usr/local/share/ca-certificates/mkcert-root.crt:ro
+      - go_modules:/root/go
+      - /tmp/pterodactyl:/tmp/pterodactyl
+      - /var/lib/pterodactyl:/var/lib/pterodactyl
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/loop0
+      - /dev/loop-control
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    command:
+      - --innodb-buffer-pool-size=1G
+      - --innodb_redo_log_capacity=536870912
+      - --innodb-flush-log-at-trx-commit=0
+      - --lower-case-table-names=1
+      - --disabled_storage_engines=ARCHIVE,BLACKHOLE,CSV,MEMORY,MRG_MYISAM,MyISAM
+      - --enforce_gtid_consistency=1
+      - --innodb_lock_wait_timeout=120
+      - --sql-mode=REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,ONLY_FULL_GROUP_BY,ANSI,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    volumes:
+      - mysql:/var/lib/mysql:delegated
+      - ./docker/mysql:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pterodactyl
+      MYSQL_USER: pterodactyl
+      MYSQL_PASSWORD: password
+    networks:
+      - pterodactyl
+    healthcheck:
+      test: [ 'CMD', 'mysql', '-h', 'mysql', '-u', 'pterodactyl', '-ppassword', '-e', 'quit' ]
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    networks:
+      - pterodactyl
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+  minio:
+    # MinIO no longer publishes images to Docker Hub; this is the last community release.
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    expose:
+      - 9000
+      - 9001
+    networks:
+      - traefik
+      - pterodactyl
+    volumes:
+      - minio:/data
+
+networks:
+  pterodactyl:
+  traefik:
+
+volumes:
+  mysql:
+    driver: local
+  minio:
+    driver: local
+  go_modules:
+    driver: local

@@ -1,0 +1,88 @@
+http:
+  middlewares:
+    compress:
+      compress: {}
+    strip-proxy-prefix:
+      stripPrefix:
+        prefixes:
+          - /s3.minio.pterodactyl.test
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: false
+    app-headers:
+      headers:
+        customFrameOptionsValue: "SAMEORIGIN"
+        contentTypeNosniff: true
+        browserXssFilter: true
+    # These headers closely simulate what you would run into with AWS or other AWS-like
+    # services in a real environment.
+    minio-headers:
+      headers:
+        accessControlAllowCredentials: false
+        accessControlAllowMethods:
+          - "HEAD"
+          - "GET"
+        accessControlAllowOriginList:
+          - "https://pterodactyl.test"
+        addVaryHeader: false
+        frameDeny: false
+        contentTypeNosniff: false
+        browserXssFilter: false
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          Access-Control-Expose-Headers: "ETag"
+          Access-Control-Max-Age: "300"
+          Vary: ""
+  routers:
+    pterodactyl:
+      priority: 5
+      rule: Host(`pterodactyl.test`)
+      service: pterodactyl
+      entryPoints:
+        - https
+      middlewares:
+        - app-headers
+      tls:
+        options: default
+    wings:
+      rule: Host(`wings.pterodactyl.test`)
+      service: wings
+      tls:
+        options: default
+    minio:
+      rule: Host(`s3.minio.pterodactyl.test`)
+      service: minio
+      middlewares:
+        - minio-headers
+      tls:
+        options: default
+    minioConsole:
+      rule: Host(`minio.pterodactyl.test`)
+      service: minioConsole
+      tls:
+        options: default
+  services:
+    pterodactyl:
+      loadBalancer:
+        servers:
+          - url: http://app:8080
+    wings:
+      loadBalancer:
+        servers:
+          - url: http://wings:8080
+    minio:
+      loadBalancer:
+        servers:
+          - url: http://minio:9000
+    minioConsole:
+      loadBalancer:
+        servers:
+          - url: http://minio:9001
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+  certificates:
+    - certFile: /etc/certs/pterodactyl.test.pem
+      keyFile: /etc/certs/pterodactyl.test-key.pem
