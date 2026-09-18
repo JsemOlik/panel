@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     ChevronDownIcon,
@@ -12,6 +12,7 @@ import {
 import { useStoreState } from '@/state/hooks';
 import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
+import { gravatarHash, gravatarUrl } from '@/lib/gravatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,6 +33,23 @@ const initials = (value: string) =>
 export default () => {
     const user = useStoreState((state) => state.user.data!);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [avatar, setAvatar] = useState<string | null>(null);
+
+    useEffect(() => {
+        let active = true;
+        setAvatar(null);
+
+        gravatarHash(user.email).then((hash) => {
+            // The avatar is rendered at 28 pixels, twice that keeps it sharp on retina screens.
+            if (active && hash) {
+                setAvatar(gravatarUrl(hash, 56));
+            }
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [user.email]);
 
     const name = [user.nameFirst, user.nameLast].filter(Boolean).join(' ') || user.username;
 
@@ -56,10 +74,20 @@ export default () => {
                     <span
                         aria-hidden={'true'}
                         className={
-                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-500/15 text-xs font-semibold text-primary-400'
+                            'flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-500/15 text-xs font-semibold text-primary-400'
                         }
                     >
-                        {initials(name)}
+                        {avatar ? (
+                            <img
+                                src={avatar}
+                                alt={''}
+                                className={'h-full w-full object-cover'}
+                                // Gravatar answers with a 404 when the account has no picture.
+                                onError={() => setAvatar(null)}
+                            />
+                        ) : (
+                            initials(name)
+                        )}
                     </span>
                     <span className={'hidden max-w-[10rem] truncate sm:block'}>{name}</span>
                     <ChevronDownIcon

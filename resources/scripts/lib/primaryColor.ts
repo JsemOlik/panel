@@ -31,25 +31,31 @@ const mix = ([r, g, b]: Rgb, amount: number): Rgb => {
     return [r, g, b].map((channel) => Math.round(channel + (target - channel) * weight)) as Rgb;
 };
 
-const findColor = (id: string | null): PrimaryColor =>
+// Falls back to the default color, so an unknown or missing id never leaves the app unstyled.
+export const resolvePrimaryColor = (id: string | null): PrimaryColor =>
     primaryColors.find((color) => color.id === id) ||
     primaryColors.find((color) => color.id === defaultPrimaryColor) ||
     primaryColors[0];
 
 export const getPrimaryColor = (): PrimaryColor => {
     try {
-        return findColor(localStorage.getItem(storageKey));
+        return resolvePrimaryColor(localStorage.getItem(storageKey));
     } catch {
-        return findColor(null);
+        return resolvePrimaryColor(null);
     }
+};
+
+// Builds the "r g b" channel values of every shade, keyed by the shade number.
+export const primaryColorShades = (color: PrimaryColor): Record<string, string> => {
+    const base = parseHex(color.value);
+
+    return Object.fromEntries(Object.entries(shades).map(([shade, amount]) => [shade, mix(base, amount).join(' ')]));
 };
 
 // Writes the color's shades into the CSS variables the Tailwind "primary" palette reads from.
 export const applyPrimaryColor = (color: PrimaryColor) => {
-    const base = parseHex(color.value);
-
-    Object.entries(shades).forEach(([shade, amount]) => {
-        document.documentElement.style.setProperty(`--color-primary-${shade}`, mix(base, amount).join(' '));
+    Object.entries(primaryColorShades(color)).forEach(([shade, channels]) => {
+        document.documentElement.style.setProperty(`--color-primary-${shade}`, channels);
     });
 };
 
