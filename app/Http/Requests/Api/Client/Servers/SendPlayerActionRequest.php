@@ -30,7 +30,7 @@ class SendPlayerActionRequest extends ClientApiRequest
                 PlayerModerationService::ACTION_KICK,
                 PlayerModerationService::ACTION_BAN,
             ])],
-            'text' => ['nullable', 'string', 'max:256', 'not_regex:/[\r\n]/'],
+            'text' => ['nullable', 'string', 'max:' . PlayerModerationService::TEXT_MAX_LENGTH, 'not_regex:/[\r\n]/'],
         ];
     }
 

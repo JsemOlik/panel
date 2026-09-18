@@ -94,7 +94,7 @@ class PlayerController extends ClientApiController
         $validated = $request->validated();
 
         try {
-            $command = $this->moderation->send(
+            $result = $this->moderation->send(
                 $server,
                 $validated['action'],
                 $player,
@@ -113,9 +113,11 @@ class PlayerController extends ClientApiController
             throw $exception;
         }
 
+        // The canonical roster name from the service, not the raw path segment: a request for
+        // "jsemolik" against a roster row "JsemOlik" must log the name that was actually acted on.
         Activity::event('server:player.' . $validated['action'])
-            ->property('player', $player)
-            ->property('command', $command)
+            ->property('player', $result['player'])
+            ->property('command', $result['command'])
             ->log();
 
         return $this->returnNoContent();

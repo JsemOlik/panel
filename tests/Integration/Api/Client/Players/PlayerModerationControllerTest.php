@@ -5,11 +5,15 @@ namespace Pterodactyl\Tests\Integration\Api\Client\Players;
 use Mockery;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Http\Response;
+use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Models\User;
+use Pterodactyl\Models\Subuser;
 use Pterodactyl\Models\Permission;
 use Pterodactyl\Models\ServerPlayer;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Pterodactyl\Services\Players\PlayerModerationService;
 use Pterodactyl\Repositories\Wings\DaemonCommandRepository;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 use Pterodactyl\Tests\Integration\Api\Client\ClientApiIntegrationTestCase;
@@ -27,6 +31,30 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
         ServerPlayer::query()->delete();
 
         parent::tearDown();
+    }
+
+    /**
+     * generateTestAccount()/createServerModel() default to the BungeeCord egg (see
+     * CreatesTestModels::getBungeecordEgg), which PlayerPresenceService::isProxy() treats as a
+     * proxy. These tests exercise the backend moderation path, so they need a subuser on an
+     * explicitly non-proxy (Paper) server. Mirrors generateTestAccount()'s own permissions branch.
+     *
+     * @return array{\Pterodactyl\Models\User, \Pterodactyl\Models\Server}
+     */
+    private function generateTestAccountForBackendServer(array $permissions): array
+    {
+        $user = User::factory()->create();
+
+        $egg = Egg::query()->where('name', 'Paper')->firstOrFail();
+        $server = $this->createServerModel(['egg_id' => $egg->id, 'nest_id' => $egg->nest_id]);
+
+        Subuser::query()->create([
+            'user_id' => $user->id,
+            'server_id' => $server->id,
+            'permissions' => $permissions,
+        ]);
+
+        return [$user, $server];
     }
 
     private function seedPlayer(Server $server, string $name = 'Steve'): void
@@ -51,7 +79,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
 
     public function testAMessageIsSentAsATellCommand(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
         $this->expectCommand($server, 'tell Steve please stop');
 
@@ -65,7 +93,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
 
     public function testAKickIsSentWithItsReason(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
         $this->expectCommand($server, 'kick Steve griefing');
 
@@ -79,7 +107,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
 
     public function testABanWithoutAReasonIsStillSent(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
         $this->expectCommand($server, 'ban Steve');
 
@@ -96,7 +124,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
      */
     public function testTextContainingALineBreakIsRejectedWithoutTouchingTheDaemon(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
 
         $mock = $this->mock(DaemonCommandRepository::class);
@@ -113,7 +141,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
 
     public function testAnUnknownActionIsRejected(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
 
         $mock = $this->mock(DaemonCommandRepository::class);
@@ -131,7 +159,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
      */
     public function testAPlayerNotOnThisServersRosterIsRejected(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server, 'Steve');
 
         $mock = $this->mock(DaemonCommandRepository::class);
@@ -162,7 +190,7 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
 
     public function testAnOfflineServerReturnsAClearError(): void
     {
-        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
         $this->seedPlayer($server);
 
         $mock = $this->mock(DaemonCommandRepository::class);
@@ -178,5 +206,80 @@ class PlayerModerationControllerTest extends ClientApiIntegrationTestCase
             ])
             ->assertStatus(Response::HTTP_BAD_GATEWAY)
             ->assertJsonPath('errors.0.detail', 'Server must be online to act on players.');
+    }
+
+    /**
+     * server_players is case-insensitive, so a request for "jsemolik" matches the roster row
+     * "JsemOlik". Both the command sent to the daemon and the activity log must use the roster's
+     * own casing — the caller-supplied casing would otherwise reach the console and the audit
+     * trail unchanged.
+     */
+    public function testADifferentlyCasedTargetUsesTheRostersCanonicalCasing(): void
+    {
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
+        $this->seedPlayer($server, 'JsemOlik');
+        $this->expectCommand($server, 'kick JsemOlik rude');
+
+        $this->actingAs($user)
+            ->postJson("/api/client/servers/$server->uuid/players/jsemolik/action", [
+                'action' => 'kick',
+                'text' => 'rude',
+            ])
+            ->assertStatus(Response::HTTP_NO_CONTENT);
+
+        \Illuminate\Support\Facades\Event::assertDispatched(
+            \Pterodactyl\Events\ActivityLogged::class,
+            fn (\Pterodactyl\Events\ActivityLogged $e) => $e->model->event === 'server:player.kick'
+                && $e->model->properties['player'] === 'JsemOlik'
+                && $e->model->properties['command'] === 'kick JsemOlik rude'
+        );
+    }
+
+    /**
+     * tell/kick/ban are backend Minecraft commands a proxy console doesn't have. Wings accepts any
+     * string and reports success, so this must be refused as a 422 before the daemon is ever
+     * touched rather than reported as a successful action that did nothing.
+     */
+    public function testAProxyServerRefusesEveryActionWithoutTouchingTheDaemon(): void
+    {
+        // generateTestAccount() defaults to the BungeeCord egg, which is exactly the case this
+        // guard exists for.
+        [$user, $server] = $this->generateTestAccount([Permission::ACTION_PLAYERS_MODERATE]);
+        $this->seedPlayer($server);
+
+        foreach ([
+            ['action' => 'message', 'text' => 'hello'],
+            ['action' => 'kick'],
+            ['action' => 'ban'],
+        ] as $payload) {
+            $mock = $this->mock(DaemonCommandRepository::class);
+            $mock->shouldNotReceive('setServer');
+            $mock->shouldNotReceive('send');
+
+            $this->actingAs($user)
+                ->postJson("/api/client/servers/$server->uuid/players/Steve/action", $payload)
+                ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    /**
+     * Mirrors SendPlayerActionRequest's max:256 rule, kept in sync via
+     * PlayerModerationService::TEXT_MAX_LENGTH so the two limits cannot drift apart.
+     */
+    public function testTextOverTheLengthLimitIsRejectedWithoutTouchingTheDaemon(): void
+    {
+        [$user, $server] = $this->generateTestAccountForBackendServer([Permission::ACTION_PLAYERS_MODERATE]);
+        $this->seedPlayer($server);
+
+        $mock = $this->mock(DaemonCommandRepository::class);
+        $mock->shouldNotReceive('setServer');
+        $mock->shouldNotReceive('send');
+
+        $this->actingAs($user)
+            ->postJson("/api/client/servers/$server->uuid/players/Steve/action", [
+                'action' => 'kick',
+                'text' => str_repeat('a', PlayerModerationService::TEXT_MAX_LENGTH + 1),
+            ])
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
