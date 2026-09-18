@@ -23,7 +23,14 @@ const useServerPlayerSessions = (
 
             return toPaginatedSet(data, Transformers.toServerPlayerSession);
         },
-        { revalidateOnMount: false, ...(config || {}) }
+        {
+            revalidateOnMount: false,
+            // Matches the roster's cadence, so an expanded player's history gains its join/leave
+            // row at the same moment the dot next to their name changes colour.
+            refreshInterval: 5000,
+            refreshWhenHidden: false,
+            ...(config || {}),
+        }
     );
 };
 
