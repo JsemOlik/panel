@@ -143,4 +143,57 @@ class TrackPlayerPresenceListenerTest extends IntegrationTestCase
 
         $this->addToAssertionCount(1);
     }
+
+    /**
+     * A single real join emits BOTH the chat broadcast and the network-thread login line, and a
+     * single real leave emits both its counterparts. Both are parsed on purpose, so presence keeps
+     * working when a build decorates or suppresses either one — but each pair is ONE event, and
+     * writing a history row per matching line showed every join and leave twice in the UI.
+     */
+    public function testTheTwoSignalsForOneEventProduceASingleHistoryRow(): void
+    {
+        $server = $this->createBackendServerModel();
+        $listener = $this->app->make(TrackPlayerPresenceListener::class);
+
+        $listener->handle(new ConsoleLinesCaptured($server, [
+            $this->line($server->id, '[17:45:26 INFO]: System chat: Steve joined the game', '2026-01-01 17:45:26'),
+            $this->line($server->id, '[17:45:26 INFO]: Steve[/1.2.3.4:100] logged in with entity id 5', '2026-01-01 17:45:27'),
+        ]));
+
+        $listener->handle(new ConsoleLinesCaptured($server, [
+            $this->line($server->id, '[17:45:52 INFO]: System chat: Steve left the game', '2026-01-01 17:45:52'),
+            $this->line($server->id, '[17:45:52 INFO]: Steve lost connection: Disconnected', '2026-01-01 17:45:53'),
+        ]));
+
+        $events = ServerPlayerSession::query()->where('name', 'Steve')->orderBy('id')->get();
+
+        $this->assertCount(2, $events, 'One join and one leave, not one row per matching console line.');
+        $this->assertSame('join', $events[0]->event);
+        $this->assertSame('leave', $events[1]->event);
+
+        // The join timestamp comes from the transition, so the second signal arriving a second
+        // later must not push the recorded session start forward.
+        $player = ServerPlayer::query()->where('name', 'Steve')->firstOrFail();
+        $this->assertSame('offline', $player->status);
+        $this->assertSame('2026-01-01 17:45:26', $player->joined_at->toDateTimeString());
+    }
+
+    /**
+     * Wings may replay buffered output after a reconnect. Re-delivering an event the roster has
+     * already applied must not append a second history row.
+     */
+    public function testReplayingAnAlreadyAppliedEventAddsNoHistoryRow(): void
+    {
+        $server = $this->createBackendServerModel();
+        $listener = $this->app->make(TrackPlayerPresenceListener::class);
+
+        $batch = new ConsoleLinesCaptured($server, [
+            $this->line($server->id, '[12:00:00] [Server thread/INFO]: Steve joined the game'),
+        ]);
+
+        $listener->handle($batch);
+        $listener->handle($batch);
+
+        $this->assertSame(1, ServerPlayerSession::query()->where('name', 'Steve')->count());
+    }
 }

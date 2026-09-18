@@ -12,10 +12,12 @@ use Pterodactyl\Models\ServerPlayerSession;
  * (server_players) and the append-only history (server_player_sessions). See
  * PlayerPresenceParser for how a raw console line becomes one of these events.
  *
- * Idempotent by design: re-processing the same event twice (e.g. Wings replaying a backlog buffer
- * on reconnect) upserts the same roster state and appends one extra history row — harmless, and
- * cheaper to tolerate than to try to deduplicate, since the console archive itself makes no
- * stronger guarantee (see app/Services/ConsoleArchive/ConsoleLineBatcher.php).
+ * Only a genuine state CHANGE is written to the history. A single join or leave normally produces
+ * two matching console lines — the chat broadcast and the network-thread line — and both are
+ * parsed deliberately, so that presence still works when a build decorates or suppresses either
+ * one (see PlayerPresenceParser). Appending a row per matching line therefore showed every join
+ * and leave twice in the UI. Recording transitions rather than lines also absorbs a Wings backlog
+ * replay on reconnect, which the console archive makes no promise against.
  */
 class PlayerPresenceService
 {
@@ -31,13 +33,6 @@ class PlayerPresenceService
     {
         $occurredAtCarbon = \Carbon\Carbon::instance($occurredAt);
 
-        ServerPlayerSession::query()->create([
-            'server_id' => $server->id,
-            'name' => $player,
-            'event' => $event,
-            'occurred_at' => $occurredAtCarbon,
-        ]);
-
         /** @var ServerPlayer $row */
         $row = ServerPlayer::query()->firstOrNew([
             'server_id' => $server->id,
@@ -46,19 +41,36 @@ class PlayerPresenceService
 
         // Out-of-order guard: batches are chronological within a server, but a line for this
         // exact player could in principle be re-delivered after a later one already applied (a
-        // reconnect replay). Never let an older event overwrite fresher known state.
+        // reconnect replay). Never let an older event overwrite fresher known state — and don't
+        // write history for it either, or a replay would file events in the past.
         if ($row->last_seen_at !== null && $occurredAtCarbon->lt($row->last_seen_at)) {
             return;
         }
 
-        $row->status = $event === PlayerPresenceParser::EVENT_JOIN
+        $status = $event === PlayerPresenceParser::EVENT_JOIN
             ? ServerPlayer::STATUS_ONLINE
             : ServerPlayer::STATUS_OFFLINE;
 
-        if ($event === PlayerPresenceParser::EVENT_JOIN) {
-            $row->joined_at = $occurredAtCarbon;
+        // The second signal for the same join/leave lands here with the roster already in the
+        // target state. That is not a new event, so it updates last_seen_at and nothing else.
+        $isTransition = !$row->exists || $row->status !== $status;
+
+        if ($isTransition) {
+            ServerPlayerSession::query()->create([
+                'server_id' => $server->id,
+                'name' => $player,
+                'event' => $event,
+                'occurred_at' => $occurredAtCarbon,
+            ]);
+
+            if ($event === PlayerPresenceParser::EVENT_JOIN) {
+                // Kept on the transition only, so the duplicate signal can't nudge the session
+                // start forward by the gap between the two lines.
+                $row->joined_at = $occurredAtCarbon;
+            }
         }
 
+        $row->status = $status;
         $row->last_seen_at = $occurredAtCarbon;
         $row->save();
     }
