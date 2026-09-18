@@ -301,7 +301,18 @@ class User extends Model implements
             ->select('servers.*')
             ->leftJoin('subusers', 'subusers.server_id', '=', 'servers.id')
             ->where(function (Builder $builder) {
-                $builder->where('servers.owner_id', $this->id)->orWhere('subusers.user_id', $this->id);
+                // Ownership always grants access. Subuser-based access additionally
+                // requires that the grant is not expired — an expired time-boxed
+                // grant must disappear from the "servers I can access" list (the
+                // client dashboard) exactly as if the subuser row were gone.
+                $builder->where('servers.owner_id', $this->id)
+                    ->orWhere(function (Builder $subuserAccess) {
+                        $subuserAccess->where('subusers.user_id', $this->id)
+                            ->where(function (Builder $notExpired) {
+                                $notExpired->whereNull('subusers.expires_at')
+                                    ->orWhere('subusers.expires_at', '>', now());
+                            });
+                    });
             })
             ->groupBy('servers.id');
     }

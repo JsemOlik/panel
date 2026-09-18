@@ -29,6 +29,17 @@ class GetUserPermissionsService
         /** @var \Pterodactyl\Models\Subuser|null $subuserPermissions */
         $subuserPermissions = $server->subusers()->where('user_id', $user->id)->first();
 
-        return $subuserPermissions ? $subuserPermissions->permissions : [];
+        // Fail closed for an expired time-boxed grant: an expired subuser must
+        // materialise to an empty permission set here, independent of the
+        // ServerPolicy check. This return value is trusted directly as the
+        // websocket JWT claims sent to Wings (see WebsocketController) and is
+        // also used to cap what a subuser may grant another subuser
+        // (SubuserRequest::validatePermissionsCanBeAssigned()), so it must not
+        // rely solely on the policy layer having already rejected the request.
+        if (!$subuserPermissions || $subuserPermissions->isExpired()) {
+            return [];
+        }
+
+        return $subuserPermissions->permissions;
     }
 }

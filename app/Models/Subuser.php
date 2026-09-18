@@ -3,6 +3,7 @@
 namespace Pterodactyl\Models;
 
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $user_id
  * @property int $server_id
  * @property array $permissions
+ * @property \Illuminate\Support\Carbon|null $expires_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property User $user
@@ -46,6 +48,7 @@ class Subuser extends Model
         'user_id' => 'int',
         'server_id' => 'int',
         'permissions' => 'array',
+        'expires_at' => 'datetime',
     ];
 
     public static array $validationRules = [
@@ -53,6 +56,7 @@ class Subuser extends Model
         'server_id' => 'required|numeric|exists:servers,id',
         'permissions' => 'nullable|array',
         'permissions.*' => 'string',
+        'expires_at' => 'nullable|date',
     ];
 
     /**
@@ -91,5 +95,46 @@ class Subuser extends Model
     public function permissions(): HasMany
     {
         return $this->hasMany(Permission::class);
+    }
+
+    /**
+     * Determines if this time-boxed grant has expired. A subuser with a null
+     * "expires_at" never expires. This is the single source of truth for
+     * expiry — every permission-resolution code path (ServerPolicy,
+     * GetUserPermissionsService, the accessibleServers() query, etc.) must
+     * route through this method (or the scopes below) rather than
+     * re-implementing the comparison, so there is exactly one place that can
+     * get the "is this grant still valid" logic wrong.
+     */
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    /**
+     * Scope a query to only subusers whose grant is currently active (no
+     * expiry set, or an expiry in the future).
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<\Pterodactyl\Models\Subuser> $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<\Pterodactyl\Models\Subuser>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder) {
+            $builder->whereNull('expires_at')->orWhere('expires_at', '>', now());
+        });
+    }
+
+    /**
+     * Scope a query to only subusers whose time-boxed grant has expired.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<\Pterodactyl\Models\Subuser> $query
+     *
+     * @return \Illuminate\Database\Eloquent\Builder<\Pterodactyl\Models\Subuser>
+     */
+    public function scopeExpired(Builder $query): Builder
+    {
+        return $query->whereNotNull('expires_at')->where('expires_at', '<=', now());
     }
 }

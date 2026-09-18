@@ -40,9 +40,17 @@ class CreateServerSubuserTest extends ClientApiIntegrationTestCase
             Permission::ACTION_USER_CREATE,
             Permission::ACTION_WEBSOCKET_CONNECT,
         ]);
+        // A subuser created without an "expires_at" is a permanent grant: the API
+        // must serialize that as an explicit null, not omit the key.
+        $response->assertJsonPath('attributes.expires_at', null);
+        $response->assertJsonPath('attributes.is_expired', false);
 
         $expected = $response->json('attributes');
-        unset($expected['permissions']);
+        // SubuserTransformer merges UserTransformer's output with "permissions",
+        // "expires_at" and "is_expired" — none of which UserTransformer (used by
+        // assertJsonTransformedWith() below, since $subuser is a User model) knows
+        // about, so they must be stripped before comparing against it.
+        unset($expected['permissions'], $expected['expires_at'], $expected['is_expired']);
 
         $this->assertJsonTransformedWith($expected, $subuser);
     }

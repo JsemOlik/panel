@@ -17,6 +17,17 @@ class ServerPolicy
             return false;
         }
 
+        // A time-boxed grant that has passed its expiry is treated exactly as if
+        // the subuser row did not exist at all: fail closed. This is the primary
+        // enforcement point — every client API request routes through here via
+        // Gate::can() -> ServerPolicy::before() -> checkPermission(), so this one
+        // check covers files, databases, backups, schedules, startup, settings,
+        // subuser management, and the websocket.connect permission used to mint
+        // the websocket JWT.
+        if ($subuser->isExpired()) {
+            return false;
+        }
+
         return in_array($permission, $subuser->permissions);
     }
 

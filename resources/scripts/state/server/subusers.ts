@@ -38,6 +38,8 @@ export interface Subuser {
     twoFactorEnabled: boolean;
     createdAt: Date;
     permissions: SubuserPermission[];
+    expiresAt: Date | null;
+    isExpired: boolean;
 
     can(permission: SubuserPermission): boolean;
 }

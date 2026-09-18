@@ -3,6 +3,7 @@
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
 use Illuminate\Http\Request;
+use Carbon\CarbonImmutable;
 use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
@@ -63,15 +64,22 @@ class SubuserController extends ClientApiController
      */
     public function store(StoreSubuserRequest $request, Server $server): array
     {
+        $expiresAt = $request->input('expires_at') ? CarbonImmutable::parse($request->input('expires_at')) : null;
+
         $response = $this->creationService->handle(
             $server,
             $request->input('email'),
-            $this->getDefaultPermissions($request)
+            $this->getDefaultPermissions($request),
+            $expiresAt
         );
 
         Activity::event('server:subuser.create')
             ->subject($response->user)
-            ->property(['email' => $request->input('email'), 'permissions' => $this->getDefaultPermissions($request)])
+            ->property([
+                'email' => $request->input('email'),
+                'permissions' => $this->getDefaultPermissions($request),
+                'expires_at' => $expiresAt?->toIso8601String(),
+            ])
             ->log();
 
         return $this->fractal->item($response)
@@ -96,21 +104,35 @@ class SubuserController extends ClientApiController
         sort($permissions);
         sort($current);
 
+        // "expires_at" is optional on update — omit it entirely to leave the
+        // existing expiry untouched, send it as null to clear it (grant never
+        // expires), or send a future timestamp to set/extend it.
+        $expiresAtProvided = $request->exists('expires_at');
+        $newExpiresAt = $expiresAtProvided
+            ? ($request->input('expires_at') ? CarbonImmutable::parse($request->input('expires_at')) : null)
+            : $subuser->expires_at;
+
+        $currentExpiresAtIso = $subuser->expires_at?->toIso8601String();
+        $newExpiresAtIso = $newExpiresAt?->toIso8601String();
+        $expiryChanged = $expiresAtProvided && $currentExpiresAtIso !== $newExpiresAtIso;
+
         $log = Activity::event('server:subuser.update')
             ->subject($subuser->user)
             ->property([
                 'email' => $subuser->user->email,
                 'old' => $current,
                 'new' => $permissions,
+                'expires_at' => ['old' => $currentExpiresAtIso, 'new' => $newExpiresAtIso],
                 'revoked' => true,
             ]);
 
         // Only update the database and hit up the Wings instance to invalidate JTI's if the permissions
-        // have actually changed for the user.
-        if ($permissions !== $current) {
-            $log->transaction(function () use ($request, $subuser, $server) {
+        // or the expiry have actually changed for the user.
+        if ($permissions !== $current || $expiryChanged) {
+            $log->transaction(function () use ($request, $subuser, $server, $newExpiresAt) {
                 $this->repository->update($subuser->id, [
                     'permissions' => $this->getDefaultPermissions($request),
+                    'expires_at' => $newExpiresAt,
                 ]);
 
                 RevokeSftpAccessJob::dispatch($subuser->user->uuid, $server);
