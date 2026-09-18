@@ -11,8 +11,13 @@ const http: AxiosInstance = axios.create({
     },
 });
 
+// The wallboard polls '/areas/wallboard' every few seconds from a screen nobody is looking at
+// for a loading indicator, same reasoning as the existing '/resources' exception below.
+const isBackgroundPollingUrl = (url: string | undefined): boolean =>
+    !!url && (url.endsWith('/resources') || url.endsWith('/wallboard'));
+
 http.interceptors.request.use((req) => {
-    if (!req.url?.endsWith('/resources')) {
+    if (!isBackgroundPollingUrl(req.url)) {
         store.getActions().progress.startContinuous();
     }
 
@@ -21,7 +26,7 @@ http.interceptors.request.use((req) => {
 
 http.interceptors.response.use(
     (resp) => {
-        if (!resp.request?.url?.endsWith('/resources')) {
+        if (!isBackgroundPollingUrl(resp.request?.url)) {
             store.getActions().progress.setComplete();
         }
 
