@@ -195,6 +195,7 @@ return [
         Pterodactyl\Providers\AuthServiceProvider::class,
         Pterodactyl\Providers\BackupsServiceProvider::class,
         Pterodactyl\Providers\BladeServiceProvider::class,
+        Pterodactyl\Providers\ConsoleArchiveServiceProvider::class,
         Pterodactyl\Providers\EventServiceProvider::class,
         Pterodactyl\Providers\HashidsServiceProvider::class,
         Pterodactyl\Providers\RouteServiceProvider::class,

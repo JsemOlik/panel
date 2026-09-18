@@ -65,6 +65,13 @@ class Permission extends Model
 
     public const ACTION_ACTIVITY_READ = 'activity.read';
 
+    // Read access to a server's captured console/chat archive (app/Models/ServerConsoleArchive.php).
+    // Deliberately its own permission rather than reusing ACTION_ACTIVITY_READ or
+    // ACTION_CONTROL_CONSOLE: this archive contains bulk, continuously-captured children's chat
+    // and should not be granted implicitly to whoever can already view the live console or the
+    // (much less sensitive) admin activity log.
+    public const ACTION_ARCHIVE_READ = 'archive.read';
+
     /**
      * Should timestamps be used on this model.
      */
@@ -204,6 +211,13 @@ class Permission extends Model
             'description' => 'Permissions that control a user\'s access to the server activity logs.',
             'keys' => [
                 'read' => 'Allows a user to view the activity logs for the server.',
+            ],
+        ],
+
+        'archive' => [
+            'description' => 'Permissions that control a user\'s access to the server\'s captured console/chat archive. This is bulk, continuously captured console output (chat, for stock Minecraft/Paper/Bungee eggs) and is more sensitive than the live console or activity log — grant it narrowly.',
+            'keys' => [
+                'read' => 'Allows a user to search and view the captured console/chat archive for this server.',
             ],
         ],
     ];
