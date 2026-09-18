@@ -85,8 +85,15 @@ class ServerPlayer extends Model
      * remove them mid-session. A row with no last_seen_at at all has never been observed either
      * way and is left alone rather than guessed at.
      *
-     * Deliberately Prunable, not MassPrunable: a player's recorded history in
-     * server_player_sessions must survive them leaving the roster, so nothing cascades from here.
+     * Deliberately Prunable, not MassPrunable: the roster is small (at most a few thousand rows per
+     * server) and pruned once a day, so hydrating each stale row and firing deleting/deleted costs
+     * nothing worth avoiding — and doing so keeps the door open for an observer or a pruning() hook
+     * later, should deleting a player from the roster ever need to trigger something, the same way
+     * server_player_sessions is the high-volume, append-only, event-free case that MassPrunable is
+     * actually for. Nothing currently listens for either, so this is not a cascade concern in
+     * either direction: server_player_sessions is keyed by (server_id, name) rather than a foreign
+     * key to this table, so a player's recorded history there survives them leaving the roster
+     * regardless of which trait is used here.
      */
     public function prunable(): Builder
     {
