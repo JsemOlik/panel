@@ -3,6 +3,7 @@
 namespace Pterodactyl\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ServerPlayerSession extends Model
 {
+    use MassPrunable;
+
     public const RESOURCE_NAME = 'server_player_session';
 
     public const EVENT_JOIN = 'join';
@@ -66,5 +69,27 @@ class ServerPlayerSession extends Model
     public function scopeForPlayer(Builder $builder, string $name): Builder
     {
         return $builder->where('name', $name);
+    }
+
+    /**
+     * Drops join/leave events older than config('players.session_prune_days').
+     *
+     * Deliberately MassPrunable, not Prunable: this is a high-volume append-only log with no
+     * cascading relationships and nothing listening for its model events, so there is nothing to
+     * gain from hydrating every row and firing deleting/deleted for each one — a mass DELETE is
+     * the correct tool for a log table of this shape, the same way ActivityLog and the console
+     * archive prune themselves.
+     */
+    public function prunable(): Builder
+    {
+        $days = (int) config('players.session_prune_days', 90);
+
+        if ($days <= 0) {
+            // Never matches — a zero or negative setting disables pruning rather than deleting
+            // the entire history table on the next scheduled run.
+            return static::query()->whereRaw('1 = 0');
+        }
+
+        return static::query()->where('occurred_at', '<=', now()->subDays($days));
     }
 }

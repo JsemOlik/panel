@@ -7,6 +7,7 @@ use Pterodactyl\Models\ActivityLog;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Console\PruneCommand;
 use Pterodactyl\Models\ServerPlayer;
+use Pterodactyl\Models\ServerPlayerSession;
 use Pterodactyl\Models\ServerConsoleArchive;
 use Pterodactyl\Models\ServerResourceSample;
 use Pterodactyl\Models\ServerResourceStatRollup;
@@ -54,6 +55,12 @@ class Kernel extends ConsoleKernel
         // touched — see ServerPlayer::prunable().
         if (config('players.prune_days')) {
             $schedule->command(PruneCommand::class, ['--model' => [ServerPlayer::class]])->daily();
+        }
+
+        // Separately prunes the join/leave history itself, on its own (longer) retention window
+        // — see config/players.php's session_prune_days and ServerPlayerSession::prunable().
+        if (config('players.session_prune_days')) {
+            $schedule->command(PruneCommand::class, ['--model' => [ServerPlayerSession::class]])->daily();
         }
 
         if (config('console_archive.prune_days')) {
