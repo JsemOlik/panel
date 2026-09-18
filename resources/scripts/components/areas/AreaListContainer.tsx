@@ -51,9 +51,7 @@ export default () => {
     const [page, setPage] = useState(!isNaN(defaultPage) && defaultPage > 0 ? defaultPage : 1);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
-    const { data: areas, error } = useSWR<PaginatedResult<Area>>(['/api/client/areas', page], () =>
-        getAreas({ page })
-    );
+    const { data: areas, error } = useSWR<PaginatedResult<Area>>(['/api/client/areas', page], () => getAreas({ page }));
 
     React.useEffect(() => {
         if (error) clearAndAddHttpError({ key: 'areas', error });

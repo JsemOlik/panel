@@ -69,6 +69,26 @@ class AreaPolicy
     }
 
     /**
+     * A user may send a console command to an area if they hold control.console on at least one
+     * of its servers — same "at least one, not all" shape as power(), and for the same reason:
+     * staff rotate between areas and routinely hold access to only part of one. As with power(),
+     * this gate only decides whether the action may be attempted at all; AreaCommandService skips
+     * the individual servers the actor lacks control.console on. The two must agree — loosening
+     * this check without that per-server filter would let a user with console access to one server
+     * broadcast a command to an entire area.
+     */
+    public function command(User $user, Area $area): bool
+    {
+        if ($area->servers->isEmpty()) {
+            return false;
+        }
+
+        return $area->servers->contains(
+            fn (Server $server) => Gate::forUser($user)->allows(Permission::ACTION_CONTROL_CONSOLE, $server)
+        );
+    }
+
+    /**
      * This is a horrendous hack to avoid Laravel's "smart" behavior that does
      * not call the before() function if there isn't a function matching the
      * policy permission.

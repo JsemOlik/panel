@@ -25,6 +25,7 @@ Route::prefix('/areas')->group(function () {
     Route::get('/', [Client\Areas\AreaController::class, 'index'])->name('api:client.areas');
     Route::get('/{area}', [Client\Areas\AreaController::class, 'view'])->name('api:client.areas.view');
     Route::post('/{area}/power', [Client\Areas\AreaPowerController::class, 'index'])->name('api:client.areas.power');
+    Route::post('/{area}/command', [Client\Areas\AreaCommandController::class, 'index'])->name('api:client.areas.command');
 });
 
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
@@ -77,7 +78,9 @@ Route::group([
         ->get('/websocket', Client\Servers\WebsocketController::class)
         ->name('api:client:server.ws');
     Route::get('/resources', Client\Servers\ResourceUtilizationController::class)->name('api:client:server.resources');
+    Route::get('/resources/history', Client\Servers\ResourceHistoryController::class)->name('api:client:server.resources.history');
     Route::get('/activity', Client\Servers\ActivityLogController::class)->name('api:client:server.activity');
+    Route::get('/console-archive', Client\Servers\ConsoleArchiveController::class)->name('api:client:server.console-archive');
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);
     Route::post('/power', [Client\Servers\PowerController::class, 'index']);

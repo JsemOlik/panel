@@ -147,4 +147,57 @@ class AreaFrontendContractTest extends ClientApiIntegrationTestCase
         $this->assertIsList($json['attributes']['skipped']);
         $this->assertIsList($json['attributes']['failed']);
     }
+
+    /**
+     * resources/scripts/api/areas/sendAreaCommand.ts returns `data.attributes`, and
+     * AreaCommandResult's `succeeded`/`skipped`/`failed` arrays are typed as objects
+     * ({id, uuid, name, reason?}), not bare name strings like PowerActionResult — a future
+     * AreaCommandDialog groups/labels results by `reason`, so every skipped/failed entry must
+     * actually carry one.
+     */
+    public function testCommandResultIsWrappedInAnAttributesEnvelopeWithPerServerReasons(): void
+    {
+        $user = User::factory()->admin()->create();
+        $area = $this->createArea();
+
+        $ok = $this->createServerModel(['name' => 'member-a']);
+        $suspended = $this->createServerModel(['name' => 'member-b', 'status' => \Pterodactyl\Models\Server::STATUS_SUSPENDED]);
+
+        $area->servers()->attach($ok->id, ['role' => Area::ROLE_MEMBER]);
+        $area->servers()->attach($suspended->id, ['role' => Area::ROLE_MEMBER]);
+
+        $json = $this->actingAs($user)
+            ->postJson('/api/client/areas/' . $area->uuid . '/command', ['command' => 'say hi'])
+            ->assertOk()
+            ->json();
+
+        $this->assertArrayHasKey('attributes', $json, 'sendAreaCommand.ts returns data.attributes.');
+
+        foreach (['command', 'succeeded', 'skipped', 'failed'] as $key) {
+            $this->assertArrayHasKey($key, $json['attributes'], "AreaCommandResult reads result.$key.");
+        }
+
+        $this->assertSame('say hi', $json['attributes']['command']);
+        $this->assertIsList($json['attributes']['succeeded']);
+        $this->assertIsList($json['attributes']['skipped']);
+        $this->assertIsList($json['attributes']['failed']);
+
+        // member-a's daemon call will fail in this test environment (no real Wings), so it lands
+        // in failed rather than succeeded — either way it must carry the same per-server shape.
+        $entries = array_merge($json['attributes']['succeeded'], $json['attributes']['skipped'], $json['attributes']['failed']);
+        $this->assertNotEmpty($entries);
+
+        foreach ($entries as $entry) {
+            foreach (['id', 'uuid', 'name'] as $key) {
+                $this->assertArrayHasKey($key, $entry, "AreaCommandResultServer reads entry.$key.");
+            }
+        }
+
+        $skippedByName = array_column($json['attributes']['skipped'], 'reason', 'name');
+        $this->assertSame('suspended', $skippedByName['member-b'] ?? null, 'skipped entries must carry a reason string.');
+
+        foreach ($json['attributes']['failed'] as $entry) {
+            $this->assertArrayHasKey('reason', $entry, 'failed entries must carry a reason string.');
+        }
+    }
 }

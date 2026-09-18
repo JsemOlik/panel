@@ -11,6 +11,7 @@ import GreyRowBox from '@/components/elements/GreyRowBox';
 import Spinner from '@/components/elements/Spinner';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import AreaPowerActions from '@/components/areas/AreaPowerActions';
+import AreaCommandDialog from '@/components/areas/AreaCommandDialog';
 import useFlash from '@/plugins/useFlash';
 
 const MemberRowBox = styled(GreyRowBox)<{ $status: ServerPowerState | undefined }>`
@@ -150,8 +151,9 @@ export default () => {
                 <h1 css={tw`text-2xl font-semibold text-neutral-50`}>{area.name}</h1>
                 {!!area.description && <p css={tw`mt-1 text-sm text-neutral-400`}>{area.description}</p>}
             </div>
-            <div css={tw`mb-4`}>
+            <div css={tw`mb-4 flex flex-wrap items-center gap-2`}>
                 <AreaPowerActions areaId={area.uuid} onCompleted={onActionCompleted} />
+                <AreaCommandDialog areaId={area.uuid} onCompleted={onActionCompleted} />
             </div>
             {area.members.length > 0 ? (
                 <div>

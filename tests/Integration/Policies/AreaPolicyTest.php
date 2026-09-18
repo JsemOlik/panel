@@ -136,4 +136,55 @@ class AreaPolicyTest extends IntegrationTestCase
         $regular = User::factory()->create();
         $this->assertFalse(Gate::forUser($regular)->allows('power', [$area, 'start']));
     }
+
+    public function testRootAdminCanAlwaysCommandAnArea(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $area = $this->createArea();
+        $server = $this->createServerModel();
+        $area->servers()->attach($server->id, ['role' => Area::ROLE_MEMBER]);
+
+        $this->assertTrue(Gate::forUser($admin)->allows('command', $area));
+    }
+
+    public function testUserWithNoConsolePermissionCannotCommandAnArea(): void
+    {
+        $user = User::factory()->create();
+        $area = $this->createArea();
+        $server = $this->createServerModel();
+        $area->servers()->attach($server->id, ['role' => Area::ROLE_MEMBER]);
+
+        $this->assertFalse(Gate::forUser($user)->allows('command', $area));
+    }
+
+    public function testSubuserWithConsolePermissionOnAnyMemberMayCommandTheArea(): void
+    {
+        $user = User::factory()->create();
+        $area = $this->createArea();
+
+        $memberOne = $this->createServerModel();
+        Subuser::query()->create([
+            'user_id' => $user->id,
+            'server_id' => $memberOne->id,
+            'permissions' => [Permission::ACTION_CONTROL_CONSOLE],
+        ]);
+
+        // A second member the user has no relationship to at all.
+        $memberTwo = $this->createServerModel();
+
+        $area->servers()->attach($memberOne->id, ['role' => Area::ROLE_MEMBER]);
+        $area->servers()->attach($memberTwo->id, ['role' => Area::ROLE_PROXY]);
+
+        // The gate only requires control.console on at least one server — AreaCommandService is
+        // what keeps this user from actually reaching memberTwo (see AreaCommandServiceTest).
+        $this->assertTrue(Gate::forUser($user)->allows('command', $area));
+    }
+
+    public function testCommandIsDeniedForAnAreaWithNoServers(): void
+    {
+        $area = $this->createArea();
+        $regular = User::factory()->create();
+
+        $this->assertFalse(Gate::forUser($regular)->allows('command', $area));
+    }
 }
