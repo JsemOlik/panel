@@ -252,3 +252,28 @@ Route::group(['prefix' => 'nests'], function () {
     Route::delete('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'destroy']);
     Route::delete('/egg/{egg:id}/shortcuts/{shortcut:id}', [Admin\Nests\EggConsoleShortcutController::class, 'destroy'])->withoutScopedBindings();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Area Controller Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/areas
+|
+*/
+Route::group(['prefix' => 'areas'], function () {
+    Route::get('/', [Admin\AreaController::class, 'index'])->name('admin.areas');
+    Route::get('/new', [Admin\AreaController::class, 'create'])->name('admin.areas.new');
+    Route::get('/view/{area:id}', [Admin\AreaController::class, 'view'])->name('admin.areas.view');
+
+    Route::post('/new', [Admin\AreaController::class, 'store']);
+    Route::post('/view/{area:id}/servers', [Admin\AreaServerController::class, 'store'])->name('admin.areas.servers');
+    Route::post('/view/{area:id}/staff', [Admin\AreaUserController::class, 'store'])->name('admin.areas.staff');
+
+    Route::patch('/view/{area:id}', [Admin\AreaController::class, 'update']);
+    Route::patch('/view/{area:id}/servers/{pivot}', [Admin\AreaServerController::class, 'update'])->withoutScopedBindings()->name('admin.areas.view.servers');
+
+    Route::delete('/view/{area:id}', [Admin\AreaController::class, 'destroy']);
+    Route::delete('/view/{area:id}/servers/{pivot}', [Admin\AreaServerController::class, 'destroy'])->withoutScopedBindings()->name('admin.areas.view.servers.delete');
+    Route::delete('/view/{area:id}/staff/{user}', [Admin\AreaUserController::class, 'destroy'])->withoutScopedBindings()->name('admin.areas.view.staff');
+});

@@ -5,6 +5,12 @@ use NunoMaduro\Collision\Provider;
 use Illuminate\Contracts\Console\Kernel;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
+// The admin layout footer references LARAVEL_START (normally defined by public/index.php), which
+// never runs when the HTTP kernel is invoked directly through the test client.
+if (!defined('LARAVEL_START')) {
+    define('LARAVEL_START', microtime(true));
+}
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $app = require __DIR__ . '/app.php';

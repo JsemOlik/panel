@@ -183,6 +183,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Areas
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for AreaPowerActionService, which sequences power actions across an
+    | area (member servers + a proxy) so the proxy always starts last and stops first.
+    */
+
+    'areas' => [
+        // Seconds to wait for a member server to report a "running" state after being sent
+        // a start signal, before giving up on it (it is recorded as failed, but does not
+        // block the rest of the area's members or the proxy from starting).
+        'start_timeout' => env('PTERODACTYL_AREAS_START_TIMEOUT', 60),
+        // Seconds between polls of a starting member's state.
+        'start_poll_interval' => env('PTERODACTYL_AREAS_START_POLL_INTERVAL', 2),
+        // Seconds to wait for the proxy to leave the "running" state after being sent a
+        // stop signal, before moving on to stopping the member servers anyway.
+        'stop_timeout' => env('PTERODACTYL_AREAS_STOP_TIMEOUT', 20),
+        // Seconds between polls of the stopping proxy's state.
+        'stop_poll_interval' => env('PTERODACTYL_AREAS_STOP_POLL_INTERVAL', 2),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Telemetry Settings
     |--------------------------------------------------------------------------
     |

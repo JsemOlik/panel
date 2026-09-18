@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'allocation' => Models\Allocation::class,
             'api_key' => Models\ApiKey::class,
+            'area' => Models\Area::class,
             'backup' => Models\Backup::class,
             'database' => Models\Database::class,
             'egg' => Models\Egg::class,

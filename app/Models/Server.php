@@ -12,6 +12,7 @@ use Pterodactyl\Models\Traits\HasRealtimeIdentifier;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
 
@@ -251,6 +252,18 @@ class Server extends Model implements Identifiable
     public function subusers(): HasMany
     {
         return $this->hasMany(Subuser::class, 'server_id', 'id');
+    }
+
+    /**
+     * Gets all of the areas this server belongs to.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\Pterodactyl\Models\Area, $this>
+     */
+    public function areas(): BelongsToMany
+    {
+        return $this->belongsToMany(Area::class, 'area_server')
+            ->withPivot(['role', 'sort_order'])
+            ->withTimestamps();
     }
 
     /**

@@ -21,6 +21,12 @@ Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.ind
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 Route::post('/servers/power', Client\BulkPowerController::class)->name('api:client.servers.power');
 
+Route::prefix('/areas')->group(function () {
+    Route::get('/', [Client\Areas\AreaController::class, 'index'])->name('api:client.areas');
+    Route::get('/{area}', [Client\Areas\AreaController::class, 'view'])->name('api:client.areas.view');
+    Route::post('/{area}/power', [Client\Areas\AreaPowerController::class, 'index'])->name('api:client.areas.power');
+});
+
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {
         Route::get('/', [Client\AccountController::class, 'index'])->name('api:client.account');

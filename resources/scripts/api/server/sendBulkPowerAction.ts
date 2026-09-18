@@ -1,13 +1,9 @@
 import http from '@/api/http';
+import { PowerActionResult, PowerSignal } from '@/api/definitions/power';
 
-export type PowerSignal = 'start' | 'stop' | 'restart' | 'kill';
-
-export interface BulkPowerResult {
-    signal: PowerSignal;
-    succeeded: string[];
-    skipped: string[];
-    failed: string[];
-}
+// Re-exported for backwards compatibility with existing call sites/imports.
+export type { PowerSignal };
+export type BulkPowerResult = PowerActionResult;
 
 // Sends the power action to every server owned by the signed-in user.
 export default async (signal: PowerSignal): Promise<BulkPowerResult> => {
