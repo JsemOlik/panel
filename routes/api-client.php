@@ -23,6 +23,9 @@ Route::post('/servers/power', Client\BulkPowerController::class)->name('api:clie
 
 Route::prefix('/areas')->group(function () {
     Route::get('/', [Client\Areas\AreaController::class, 'index'])->name('api:client.areas');
+    // Must be registered before the "/{area}" uuid-binding route below, or "wallboard" would be
+    // interpreted as an area's uuid and 404 as a missing model instead of reaching this action.
+    Route::get('/wallboard', [Client\Areas\AreaWallboardController::class, 'index'])->name('api:client.areas.wallboard');
     Route::get('/{area}', [Client\Areas\AreaController::class, 'view'])->name('api:client.areas.view');
     Route::post('/{area}/power', [Client\Areas\AreaPowerController::class, 'index'])->name('api:client.areas.power');
     Route::post('/{area}/command', [Client\Areas\AreaCommandController::class, 'index'])->name('api:client.areas.command');
@@ -81,6 +84,11 @@ Route::group([
     Route::get('/resources/history', Client\Servers\ResourceHistoryController::class)->name('api:client:server.resources.history');
     Route::get('/activity', Client\Servers\ActivityLogController::class)->name('api:client:server.activity');
     Route::get('/console-archive', Client\Servers\ConsoleArchiveController::class)->name('api:client:server.console-archive');
+
+    Route::group(['prefix' => '/players'], function () {
+        Route::get('/', [Client\Servers\PlayerController::class, 'index'])->name('api:client:server.players');
+        Route::get('/{player}/sessions', [Client\Servers\PlayerController::class, 'sessions'])->name('api:client:server.players.sessions');
+    });
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);
     Route::post('/power', [Client\Servers\PowerController::class, 'index']);

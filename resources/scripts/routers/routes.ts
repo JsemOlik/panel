@@ -37,6 +37,7 @@ import AccountAboutContainer from '@/components/dashboard/AccountAboutContainer'
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 import ConsoleArchiveContainer from '@/components/server/consoleArchive/ConsoleArchiveContainer';
+import PlayerListContainer from '@/components/server/players/PlayerListContainer';
 import ServerResourceHistoryContainer from '@/components/server/history/ServerResourceHistoryContainer';
 
 // Each of the router files is already code split out appropriately — so
@@ -229,6 +230,13 @@ export default {
             name: 'Console Archive',
             icon: SearchIcon,
             component: ConsoleArchiveContainer,
+        },
+        {
+            path: '/players',
+            permission: 'players.*',
+            name: 'Players',
+            icon: UsersIcon,
+            component: PlayerListContainer,
         },
         {
             path: '/history',

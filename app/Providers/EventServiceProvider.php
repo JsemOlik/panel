@@ -14,7 +14,10 @@ use Pterodactyl\Listeners\RevocationListener;
 use Pterodactyl\Observers\EggVariableObserver;
 use Pterodactyl\Listeners\AuthenticationListener;
 use Pterodactyl\Events\Server\Installed as ServerInstalledEvent;
+use Pterodactyl\Listeners\Players\TrackPlayerPresenceListener;
+use Pterodactyl\Events\ConsoleArchive\ConsoleLinesCaptured;
 use Pterodactyl\Notifications\ServerInstalled as ServerInstalledNotification;
+use Pterodactyl\Listeners\Alerts\ScanConsoleLinesForKeywordAlerts;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -24,6 +27,7 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         ServerInstalledEvent::class => [ServerInstalledNotification::class],
+        ConsoleLinesCaptured::class => [TrackPlayerPresenceListener::class, ScanConsoleLinesForKeywordAlerts::class],
     ];
 
     protected $subscribe = [
